@@ -18,13 +18,38 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserAdmin(UserAdmin):
     model = User
     add_form = CustomUserCreationForm
-    list_display = ('username', 'email',
-                    'is_active', 'is_superuser', 'role')
-    search_fields = ('username', 'email', 'is_active',)
+    list_display = (
+        'username', 'email',
+        'is_active', 'is_superuser',
+        'role', 'position', 'experience'
+        )
+    search_fields = (
+        'username', 'email', 'is_active',
+        'position', 'experience'
+        )
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': (
+            'first_name', 'last_name',
+            'second_name', 'email', 'birthday',
+            'position', 'experience',
+            'contact'
+        )}),
+        (_('Permissions'), {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups',
+                       'user_permissions', 'role'),
+        }),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    )
+
     add_fieldsets = (
         (None, {'fields': ('username', 'password1', 'password2')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name', 'second_name', 'email', 'birthday')}),
+            'first_name', 'last_name',
+            'second_name', 'email', 'birthday',
+            'position', 'experience',
+            'contact'
+            )}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups',
                        'user_permissions', 'role'),

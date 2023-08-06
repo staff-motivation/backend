@@ -13,7 +13,11 @@ class UserRole(models.TextChoices):
     ADMIN = 'admin', 'Администратор'
 
 
-MAX_LENGTH_ROLES = max(len(_[0]) for _ in UserRole.choices)
+class Position(models.TextChoices):
+    """ Квалификация. """
+    JUNIOR = 'junior', 'Junior'
+    MIDDLE = 'middle', 'Middle'
+    SENIOR = 'senior', 'Senior'
 
 
 class CustomUserManager(UserManager):
@@ -34,7 +38,8 @@ class CustomUserManager(UserManager):
     def create_user(
             self,
             username, email, password, password_confirmation,
-            first_name, last_name, **extra_fields
+            first_name, last_name, position, experience,
+            **extra_fields
             ):
         if password != password_confirmation:
             raise ValueError('Пароли должны совпадать!')
@@ -42,6 +47,8 @@ class CustomUserManager(UserManager):
         extra_fields.setdefault('role', UserRole.USER)
         extra_fields.setdefault('first_name', first_name)
         extra_fields.setdefault('last_name', last_name)
+        extra_fields.setdefault('position', position)
+        extra_fields.setdefault('experience', experience)
         return super().create_user(
             username, email, password, **extra_fields)
 
@@ -103,9 +110,19 @@ class User(AbstractUser):
     )
     role = models.CharField(
         verbose_name='Роль',
-        max_length=MAX_LENGTH_ROLES,
+        max_length=max(len(_[0]) for _ in UserRole.choices),
         choices=UserRole.choices,
         default=UserRole.USER
+    )
+    position = models.CharField(
+        verbose_name='Уровень должности',
+        max_length=max(len(_[0]) for _ in Position.choices),
+        choices=Position.choices,
+        default=Position.JUNIOR
+    )
+    experience = models.IntegerField(
+        verbose_name='Опыт работы',
+        default=1
     )
     contact = models.TextField(
         verbose_name='Контакты',
@@ -125,7 +142,8 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (
         'first_name', 'last_name', 'birthday',
-        'second_name', 'username', 'password')
+        'second_name', 'username', 'password',
+        'position', 'experience')
 
     class Meta:
         verbose_name = 'Пользователь'
