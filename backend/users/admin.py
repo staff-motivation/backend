@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext as _
 
 
-from .models import User
+from .models import Department, User
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -21,19 +21,19 @@ class CustomUserAdmin(UserAdmin):
     list_display = (
         'username', 'email',
         'is_active', 'is_superuser',
-        'role', 'position', 'experience'
-        )
+        'role', 'position', 'experience', 'department',
+    )
     search_fields = (
         'username', 'email', 'is_active',
-        'position', 'experience'
-        )
+        'position', 'experience', 'department',
+    )
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': (
             'first_name', 'last_name',
             'second_name', 'email', 'birthday',
-            'position', 'experience',
-            'contact'
+            'position', 'experience', 'department',
+            'contact',
         )}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups',
@@ -47,9 +47,9 @@ class CustomUserAdmin(UserAdmin):
         (_('Personal info'), {'fields': (
             'first_name', 'last_name',
             'second_name', 'email', 'birthday',
-            'position', 'experience',
-            'contact'
-            )}),
+            'position', 'experience', 'department',
+            'contact',
+        )}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups',
                        'user_permissions', 'role'),
@@ -57,5 +57,31 @@ class CustomUserAdmin(UserAdmin):
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'department':
+            kwargs['queryset'] = Department.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+
+class CustomUserInline(admin.TabularInline):
+    model = User
+    fields = ('username', 'email',
+              'role', 'position', 'experience')
+    readonly_fields = ('username', 'email',
+                       'role', 'position', 'experience')
+    extra = 0
+
+
+class DepartmentAdmin(admin.ModelAdmin):
+    model = Department
+    list_display = ('name', 'user_count')
+    inlines = [CustomUserInline]
+
+    def user_count(self, obj):
+        return obj.users_department.count()
+
+    user_count.short_description = 'Колличество участников'
+
+
+admin.site.register(Department, DepartmentAdmin)
 admin.site.register(User, CustomUserAdmin)
