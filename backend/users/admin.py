@@ -4,7 +4,32 @@ from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext as _
 
 
-from .models import Department, User
+from .models import Department, User, UserRating
+
+
+class UserRatingInline(admin.TabularInline):
+    model = UserRating
+    fields = (
+        'kpi_name', 'kpi_category',
+        'target', 'actual', 'date'
+    )
+    readonly_fields = (
+        'kpi_name', 'kpi_category',
+        'target', 'actual', 'date'
+    )
+    extra = 0
+
+
+class UserRatingAdmin(admin.ModelAdmin):
+    model = UserRating
+    list_display = (
+        'kpi_name', 'kpi_category',
+        'target', 'actual', 'date'
+    )
+    search_fields = ('kpi_name', 'kpi_category',)
+
+
+admin.site.register(UserRating, UserRatingAdmin)
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -32,11 +57,11 @@ class CustomUserAdmin(UserAdmin):
         (_('Personal info'), {'fields': (
             'first_name', 'last_name',
             'second_name', 'email', 'birthday',
-            'position', 'experience', 'department',
+            'position', 'experience', 'department', 'user_rating',
             'contact',
         )}),
         (_('Permissions'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups',
+            'fields': ('is_active', 'is_staff', 'is_superuser',
                        'user_permissions', 'role'),
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
@@ -47,11 +72,11 @@ class CustomUserAdmin(UserAdmin):
         (_('Personal info'), {'fields': (
             'first_name', 'last_name',
             'second_name', 'email', 'birthday',
-            'position', 'experience', 'department',
+            'position', 'experience', 'department', 'user_rating',
             'contact',
         )}),
         (_('Permissions'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups',
+            'fields': ('is_active', 'is_staff', 'is_superuser',
                        'user_permissions', 'role'),
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
@@ -62,14 +87,24 @@ class CustomUserAdmin(UserAdmin):
             kwargs['queryset'] = Department.objects.all()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    inlines = [UserRatingInline]
+
 
 class CustomUserInline(admin.TabularInline):
     model = User
-    fields = ('username', 'email',
-              'role', 'position', 'experience')
-    readonly_fields = ('username', 'email',
-                       'role', 'position', 'experience')
+    fields = (
+        'username', 'email', 'role', 'position',
+        'experience', 'user_rating_actual',
+    )
+    readonly_fields = (
+        'username', 'email', 'role', 'position',
+        'experience', 'user_rating_actual',
+    )
     extra = 0
+
+    def user_rating_actual(self, obj):
+        return obj.user_rating.actual
+    user_rating_actual.short_description = 'Актульный KPI работника'
 
 
 class DepartmentAdmin(admin.ModelAdmin):
