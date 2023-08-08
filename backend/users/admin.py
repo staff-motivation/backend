@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext as _
 
 
-from .models import Department, User, UserRating
+from .models import Department, Bonus, Group, User, UserRating, Membership
 
 
 class UserRatingInline(admin.TabularInline):
@@ -29,9 +29,6 @@ class UserRatingAdmin(admin.ModelAdmin):
     search_fields = ('kpi_name', 'kpi_category',)
 
 
-admin.site.register(UserRating, UserRatingAdmin)
-
-
 class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
@@ -44,49 +41,43 @@ class CustomUserAdmin(UserAdmin):
     model = User
     add_form = CustomUserCreationForm
     list_display = (
-        'username', 'email',
-        'is_active', 'is_superuser',
+        'username', 'email', 'is_active', 'is_superuser',
         'role', 'position', 'experience', 'department',
+        'bonus',
     )
     search_fields = (
         'username', 'email', 'is_active',
         'position', 'experience', 'department',
     )
+    filter_vertical = ('groups',)
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name',
-            'second_name', 'email', 'birthday',
-            'position', 'experience', 'department', 'user_rating',
-            'contact',
+            'first_name', 'last_name', 'second_name', 'email', 'birthday',
+            'position', 'experience', 'department',
+            'user_rating', 'contact',
         )}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser',
                        'user_permissions', 'role'),
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+        (_('Bonus'), {'fields': ('bonus',)}),
     )
-
     add_fieldsets = (
         (None, {'fields': ('username', 'password1', 'password2')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name',
-            'second_name', 'email', 'birthday',
-            'position', 'experience', 'department', 'user_rating',
-            'contact',
+            'first_name', 'last_name', 'second_name', 'email', 'birthday',
+            'position', 'experience', 'department',
+            'user_rating', 'contact',
         )}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser',
                        'user_permissions', 'role'),
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+        (_('Bonus'), {'fields': ('bonus',)}),
     )
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'department':
-            kwargs['queryset'] = Department.objects.all()
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
     inlines = [UserRatingInline]
 
 
@@ -118,5 +109,19 @@ class DepartmentAdmin(admin.ModelAdmin):
     user_count.short_description = 'Колличество участников'
 
 
+class GroupAdmin(admin.ModelAdmin):
+    model = Group
+    list_display = ('name',)
+
+
+class BonusAdmin(admin.ModelAdmin):
+    model = Bonus
+    list_display = ('bonus_points', 'privilege')
+
+
+admin.site.register(Bonus, BonusAdmin)
+admin.site.register(Group, GroupAdmin)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(UserRating, UserRatingAdmin)
+admin.site.register(Membership)
