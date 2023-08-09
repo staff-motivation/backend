@@ -4,8 +4,6 @@ from django.db import models
 
 from backend.settings import MAX_LENGTH_USERNAME, MAX_LENGTH_EMAIL
 
-from .validators import validate_username
-
 
 class UserRole(models.TextChoices):
     """ Роли пользователей. """
@@ -140,7 +138,9 @@ class UserRating(models.Model):
 class CustomUserManager(UserManager):
     def create_superuser(
             self,
-            username, email, password, first_name, last_name,
+            username,
+            email, password, first_name, last_name,
+            second_name,
             **extra_fields
             ):
         extra_fields.setdefault('role', UserRole.ADMIN)
@@ -149,13 +149,15 @@ class CustomUserManager(UserManager):
         extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('first_name', first_name)
         extra_fields.setdefault('last_name', last_name)
+        extra_fields.setdefault('second_name', second_name)
         return super().create_superuser(
             username, email, password, **extra_fields)
 
     def create_user(
             self,
-            username, email, password, password_confirmation,
-            first_name, last_name, position, experience,
+            username,
+            email, password, password_confirmation,
+            first_name, last_name, second_name,
             **extra_fields
             ):
         if password != password_confirmation:
@@ -164,8 +166,7 @@ class CustomUserManager(UserManager):
         extra_fields.setdefault('role', UserRole.USER)
         extra_fields.setdefault('first_name', first_name)
         extra_fields.setdefault('last_name', last_name)
-        extra_fields.setdefault('position', position)
-        extra_fields.setdefault('experience', experience)
+        extra_fields.setdefault('second_name', second_name)
         return super().create_user(
             username, email, password, **extra_fields)
 
@@ -176,7 +177,6 @@ class User(AbstractUser):
     """
     username = models.CharField(
         verbose_name='Ник-нейм',
-        validators=[validate_username],
         max_length=MAX_LENGTH_USERNAME,
         help_text='Введите имя пользователя',
         unique=True,
@@ -288,20 +288,24 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (
-        'first_name', 'last_name', 'birthday',
-        'second_name', 'username', 'password',
+        'username',
+        'first_name',
+        'last_name',
+        'second_name',
+        'birthday',
+        'password',
     )
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('username',)
+        ordering = ('birthday',)
 
     def __str__(self):
-        return str(self.username)
+        return f"{self.first_name} {self.last_name}"
 
     def get_full_name(self):
-        return f'{self.first_name} {self.last_name}'
+        return f"{self.last_name} {self.first_name} {self.second_name}"
 
     def get_short_name(self):
         return self.first_name

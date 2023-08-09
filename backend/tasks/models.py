@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils.translation import gettext as _
 import datetime
 
 
@@ -46,7 +47,9 @@ class Task(models.Model):
 
     task_status = models.CharField(
         verbose_name='Текущий статус задачи',
-        max_length=max(len(_[0]) for _ in TaskStatus.choices),
+        max_length=max(
+            len(choice[0])
+            if choice[0] else 0 for choice in TaskStatus.choices),
         choices=TaskStatus.choices,
     )
 
