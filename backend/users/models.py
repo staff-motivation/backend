@@ -158,9 +158,6 @@ class CustomUserManager(UserManager):
             first_name, last_name, position, experience,
             **extra_fields
     ):
-        if password != password_confirmation:
-            raise ValueError('Пароли должны совпадать!')
-
         extra_fields.setdefault('role', UserRole.USER)
         extra_fields.setdefault('is_active', True)
         return super().create_user(
