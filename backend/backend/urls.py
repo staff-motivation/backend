@@ -7,6 +7,7 @@ from drf_yasg import openapi
 schema_view = get_schema_view(
     openapi.Info(
         title="Employee Motivation System",
+        default_version='v1',
         description="The system is designed for tracking the quality of task execution",
     ),
     public=True,
