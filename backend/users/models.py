@@ -274,7 +274,7 @@ class User(AbstractUser):
     contact = models.TextField(
         verbose_name='Контакты',
         help_text='Введите список ваших доступных контактов',
-        blank=False
+        blank=True
     )
     is_staff = models.BooleanField(
         verbose_name='Является ли пользователь персоналом',
