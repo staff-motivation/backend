@@ -157,17 +157,20 @@ class CustomUserManager(UserManager):
             username, email, password, password_confirmation,
             first_name, last_name, position, experience,
             **extra_fields
-            ):
+    ):
         if password != password_confirmation:
             raise ValueError('Пароли должны совпадать!')
 
         extra_fields.setdefault('role', UserRole.USER)
-        extra_fields.setdefault('first_name', first_name)
-        extra_fields.setdefault('last_name', last_name)
-        extra_fields.setdefault('position', position)
-        extra_fields.setdefault('experience', experience)
+        extra_fields.setdefault('is_active', True)
         return super().create_user(
-            username, email, password, **extra_fields)
+            username, email, password,
+            **extra_fields,
+            first_name=first_name,
+            last_name=last_name,
+            position=position,
+            experience=experience
+        )
 
 
 class User(AbstractUser):
@@ -274,7 +277,7 @@ class User(AbstractUser):
     contact = models.TextField(
         verbose_name='Контакты',
         help_text='Введите список ваших доступных контактов',
-        blank=False
+        blank=True
     )
     is_staff = models.BooleanField(
         verbose_name='Является ли пользователь персоналом',
