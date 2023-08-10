@@ -154,21 +154,22 @@ class CustomUserManager(UserManager):
             username, email, password, **extra_fields)
 
     def create_user(
-            self,
-            username,
-            email, password, password_confirmation,
-            first_name, last_name, second_name,
-            **extra_fields
-            ):
-        if password != password_confirmation:
-            raise ValueError('Пароли должны совпадать!')
-
+            self, username, email, password,
+            first_name, last_name, second_name, **extra_fields
+    ):
+        default_position = User._meta.get_field("position").get_default()
+        default_experience = User._meta.get_field("experience").get_default()
+        extra_fields.setdefault("position", default_position)
+        extra_fields.setdefault("experience", default_experience)
         extra_fields.setdefault('role', UserRole.USER)
+        extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('first_name', first_name)
         extra_fields.setdefault('last_name', last_name)
         extra_fields.setdefault('second_name', second_name)
         return super().create_user(
-            username, email, password, **extra_fields)
+            username, email, password,
+            **extra_fields,
+        )
 
 
 class User(AbstractUser):
