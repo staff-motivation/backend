@@ -4,7 +4,10 @@ from rest_framework import serializers
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
-    password_confirmation = serializers.CharField(write_only=True)
+    password_confirmation = serializers.CharField(
+        write_only=True,
+        style={'input_type': 'password'}
+    )
 
     class Meta:
         model = User
@@ -16,12 +19,22 @@ class CustomUserCreateSerializer(UserCreateSerializer):
     def validate(self, data):
         if data["password"] != data.get("password_confirmation"):
             raise serializers.ValidationError("Пароли должны совпадать.")
-        return data
+
+        if User.objects.filter(email=data["email"]).exists():
+            raise serializers.ValidationError(
+                "Пользователь с таким email уже существует."
+            )
+
+        required_fields = [
+            "username", "email", "password", "password_confirmation",
+            "first_name", "last_name", "birthday", "second_name"
+        ]
+        if any(field not in data for field in required_fields):
+            raise serializers.ValidationError(
+                "Не все обязательные поля заполнены."
+            )
+        data.pop("password_confirmation")
+        return super().validate(data)
 
     def create(self, validated_data):
-        default_position = User._meta.get_field("position").default
-        default_experience = User._meta.get_field("experience").default
-        validated_data.setdefault("position", default_position)
-        validated_data.setdefault("experience", default_experience)
-
         return super().create(validated_data)
