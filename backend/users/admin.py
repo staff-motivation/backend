@@ -2,9 +2,19 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext as _
+from django.http import HttpResponse
+from django.urls import reverse
+from import_export import resources
+from django import forms
+from import_export.admin import ImportExportModelAdmin
+
+from .models import (
+    Department, Bonus, Group, User, UserRating, Membership, AllowedEmail
+)
 
 
-from .models import Department, Bonus, Group, User, UserRating, Membership
+class ImportEmailsForm(forms.Form):
+    file = forms.FileField(label='Выберите файл')
 
 
 class UserRatingInline(admin.TabularInline):
@@ -30,7 +40,6 @@ class UserRatingAdmin(admin.ModelAdmin):
 
 
 class CustomUserCreationForm(UserCreationForm):
-
     class Meta:
         model = UserCreationForm.Meta.model
         fields = '__all__'
@@ -95,6 +104,7 @@ class CustomUserInline(admin.TabularInline):
 
     def user_rating_actual(self, obj):
         return obj.user_rating.actual
+
     user_rating_actual.short_description = 'Актульный KPI работника'
 
 
@@ -119,9 +129,21 @@ class BonusAdmin(admin.ModelAdmin):
     list_display = ('bonus_points', 'privilege')
 
 
+class AllowedEmailResource(resources.ModelResource):
+    class Meta:
+        model = AllowedEmail
+        fields = ('email',)
+
+
+class AllowedEmailAdmin(ImportExportModelAdmin):
+    resource_class = AllowedEmailResource
+
+
+admin.site.register(AllowedEmail, AllowedEmailAdmin)
 admin.site.register(Bonus, BonusAdmin)
 admin.site.register(Group, GroupAdmin)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(UserRating, UserRatingAdmin)
 admin.site.register(Membership)
+

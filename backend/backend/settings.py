@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 from django.conf import settings
 from django.conf.locale.ru import formats as ru_formats
@@ -22,6 +23,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'drf_yasg',
+    'import_export',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
     'news.apps.NewsConfig',
@@ -39,11 +41,17 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': False,
+    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': True,
     'SERIALIZERS': {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
     },
+    'EMAIL_BACKEND': 'django.core.mail.backends.filebased.EmailBackend',
+    'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails')
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'mails')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
