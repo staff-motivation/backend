@@ -1,6 +1,7 @@
 from users.models import User, AllowedEmail
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
+from django.contrib.auth.hashers import make_password
 
 
 class CustomUserCreateSerializer(serializers.ModelSerializer):
@@ -44,5 +45,7 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         email = validated_data["email"]
+        password = validated_data["password"]
         validated_data["username"] = email.split('@')[0]
+        validated_data["password"] = make_password(password)
         return super().create(validated_data)
