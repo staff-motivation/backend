@@ -3,7 +3,8 @@ from django.conf import settings
 from django.db import models
 
 from backend.settings import MAX_LENGTH_USERNAME, MAX_LENGTH_EMAIL
-# from api.utils import send_activation_email
+
+
 class UserRole(models.TextChoices):
     """ Роли пользователей. """
     USER = 'user', 'Пользователь'
@@ -145,38 +146,6 @@ class UserRating(models.Model):
         verbose_name_plural = 'KPI показатели'
 
 
-class CustomUserManager(UserManager):
-    def create_superuser(
-            self,
-            username,
-            email, password, first_name, last_name,
-            **extra_fields
-            ):
-        extra_fields.setdefault('role', UserRole.ADMIN)
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('first_name', first_name)
-        extra_fields.setdefault('last_name', last_name)
-        return super().create_superuser(
-            username, email, password, **extra_fields)
-
-    def create_user(
-            self, username, email, password,
-            first_name, last_name, **extra_fields
-    ):
-        default_position = User._meta.get_field("position").get_default()
-        default_experience = User._meta.get_field("experience").get_default()
-        extra_fields.setdefault("position", default_position)
-        extra_fields.setdefault("experience", default_experience)
-        extra_fields.setdefault('role', UserRole.USER)
-        extra_fields.setdefault('first_name', first_name)
-        extra_fields.setdefault('last_name', last_name)
-        return super().create_user(
-            username, email, password,
-            **extra_fields,
-        )
-
-
 class User(AbstractUser):
     """
     Модель для User. Параметры полей.
@@ -279,7 +248,6 @@ class User(AbstractUser):
         verbose_name='Активен ли пользователь',
         default=True
     )
-    objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (
