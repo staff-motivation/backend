@@ -45,5 +45,4 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         email = validated_data["email"]
         validated_data["username"] = email.split('@')[0]
-
         return super().create(validated_data)

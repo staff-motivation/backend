@@ -62,9 +62,9 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name', 'second_name', 'email', 'birthday',
+            'first_name', 'last_name', 'email', 'birthday',
             'position', 'experience', 'department',
-            'user_rating', 'contact',
+            'user_rating',
         )}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser',
@@ -76,9 +76,9 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {'fields': ('username', 'password1', 'password2')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name', 'second_name', 'email', 'birthday',
+            'first_name', 'last_name', 'email', 'birthday',
             'position', 'experience', 'department',
-            'user_rating', 'contact',
+            'user_rating',
         )}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser',

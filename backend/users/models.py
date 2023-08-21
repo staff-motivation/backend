@@ -155,7 +155,6 @@ class CustomUserManager(UserManager):
         extra_fields.setdefault('role', UserRole.ADMIN)
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('first_name', first_name)
         extra_fields.setdefault('last_name', last_name)
         return super().create_superuser(
@@ -170,15 +169,12 @@ class CustomUserManager(UserManager):
         extra_fields.setdefault("position", default_position)
         extra_fields.setdefault("experience", default_experience)
         extra_fields.setdefault('role', UserRole.USER)
-        extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('first_name', first_name)
         extra_fields.setdefault('last_name', last_name)
-        user = super().create_user(
+        return super().create_user(
             username, email, password,
             **extra_fields,
         )
-        send_activation_email(user, activation_token)
-        return user
 
 
 class User(AbstractUser):
@@ -203,7 +199,7 @@ class User(AbstractUser):
     )
     groups = models.ManyToManyField(
         Group,
-        verbose_name='Ингредиенты',
+        verbose_name='Группа',
         related_name='users_groups',
         through='Membership',
         blank=True
@@ -281,7 +277,7 @@ class User(AbstractUser):
     )
     is_active = models.BooleanField(
         verbose_name='Активен ли пользователь',
-        default=False
+        default=True
     )
     objects = CustomUserManager()
 
