@@ -6,15 +6,11 @@ from django.http import HttpResponse
 from django.urls import reverse
 from import_export import resources
 from django import forms
-from import_export.admin import ImportExportModelAdmin
+
 
 from .models import (
-    Department, Bonus, Group, User, UserRating, Membership, AllowedEmail
+    Department, Bonus, Group, User, UserRating, Membership
 )
-
-
-class ImportEmailsForm(forms.Form):
-    file = forms.FileField(label='Выберите файл')
 
 
 class UserRatingInline(admin.TabularInline):
@@ -49,20 +45,21 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserAdmin(UserAdmin):
     model = User
     add_form = CustomUserCreationForm
+    ordering = ['email']
     list_display = (
-        'username', 'email', 'is_active', 'is_superuser',
+        'email', 'is_active', 'is_superuser',
         'role', 'position', 'experience', 'department',
         'bonus',
     )
     search_fields = (
-        'username', 'email', 'is_active',
+        'email', 'is_active',
         'position', 'experience', 'department',
     )
     filter_vertical = ('groups',)
     fieldsets = (
-        (None, {'fields': ('username', 'password')}),
+        (None, {'fields': ('email', 'password')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name', 'email', 'birthday',
+            'first_name', 'last_name','birthday',
             'position', 'experience', 'department',
             'user_rating',
         )}),
@@ -74,9 +71,9 @@ class CustomUserAdmin(UserAdmin):
         (_('Bonus'), {'fields': ('bonus',)}),
     )
     add_fieldsets = (
-        (None, {'fields': ('username', 'password1', 'password2')}),
+        (None, {'fields': ('email', 'password1', 'password2')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name', 'email', 'birthday',
+            'first_name', 'last_name', 'birthday',
             'position', 'experience', 'department',
             'user_rating',
         )}),
@@ -93,11 +90,11 @@ class CustomUserAdmin(UserAdmin):
 class CustomUserInline(admin.TabularInline):
     model = User
     fields = (
-        'username', 'email', 'role', 'position',
+        'email', 'role', 'position',
         'experience', 'user_rating_actual',
     )
     readonly_fields = (
-        'username', 'email', 'role', 'position',
+        'email', 'role', 'position',
         'experience', 'user_rating_actual',
     )
     extra = 0
@@ -129,17 +126,6 @@ class BonusAdmin(admin.ModelAdmin):
     list_display = ('bonus_points', 'privilege')
 
 
-class AllowedEmailResource(resources.ModelResource):
-    class Meta:
-        model = AllowedEmail
-        fields = ('email',)
-
-
-class AllowedEmailAdmin(ImportExportModelAdmin):
-    resource_class = AllowedEmailResource
-
-
-admin.site.register(AllowedEmail, AllowedEmailAdmin)
 admin.site.register(Bonus, BonusAdmin)
 admin.site.register(Group, GroupAdmin)
 admin.site.register(Department, DepartmentAdmin)

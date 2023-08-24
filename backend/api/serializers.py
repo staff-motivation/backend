@@ -1,7 +1,6 @@
-from users.models import User, AllowedEmail
+from users.models import User, CustomUserManager
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
 
 
 class CustomUserCreateSerializer(serializers.ModelSerializer):
@@ -21,12 +20,6 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
             "first_name", "last_name", "birthday"
         ]
 
-    def validate_email(self, value):
-        allowed_emails = AllowedEmail.objects.values_list('email', flat=True)
-        if value not in allowed_emails:
-            raise serializers.ValidationError("Данный email не разрешен для регистрации.")
-        return value
-
     def validate(self, data):
         if data["password"] != data.get("password_confirmation"):
             raise serializers.ValidationError("Пароли должны совпадать.")
@@ -41,11 +34,11 @@ class CustomUserCreateSerializer(serializers.ModelSerializer):
         if any(field not in data for field in required_fields):
             raise serializers.ValidationError("Не все обязательные поля заполнены.")
         data.pop("password_confirmation")
-        return super().validate(data)
+        return data
 
     def create(self, validated_data):
-        email = validated_data["email"]
-        password = validated_data["password"]
-        validated_data["username"] = email.split('@')[0]
-        validated_data["password"] = make_password(password)
-        return super().create(validated_data)
+        password = validated_data.pop('password')
+        user = self.Meta.model(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user

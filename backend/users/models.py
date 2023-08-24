@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.conf import settings
 from django.db import models
 
@@ -146,18 +146,32 @@ class UserRating(models.Model):
         verbose_name_plural = 'KPI показатели'
 
 
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+
+        if not email:
+            raise ValueError('The Email field must be set')
+
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+        return self.create_user(email, password, **extra_fields)
+
+
 class User(AbstractUser):
     """
     Модель для User. Параметры полей.
     """
-    username = models.CharField(
-        verbose_name='Ник-нейм',
-        max_length=MAX_LENGTH_USERNAME,
-        help_text='Введите имя пользователя',
-        unique=True,
-        db_index=True,
-        blank=False
-    )
+    username = None
     department = models.ForeignKey(
         Department,
         verbose_name='Подразделение',
@@ -246,12 +260,12 @@ class User(AbstractUser):
     )
     is_active = models.BooleanField(
         verbose_name='Активен ли пользователь',
-        default=True
+        default=False
     )
+    objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (
-        'username',
         'first_name',
         'last_name',
         'birthday',
