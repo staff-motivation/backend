@@ -3,22 +3,14 @@ from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 
 
-class CustomUserCreateSerializer(serializers.ModelSerializer):
+class CustomUserCreateSerializer(UserCreateSerializer):
     password_confirmation = serializers.CharField(
         write_only=True,
         style={'input_type': 'password'}
     )
-    password = serializers.CharField(
-        write_only=True,
-        style={'input_type': 'password'}
-    )
 
-    class Meta:
-        model = User
-        fields = [
-            "email", "password", "password_confirmation",
-            "first_name", "last_name", "birthday"
-        ]
+    class Meta(UserCreateSerializer.Meta):
+        fields = UserCreateSerializer.Meta.fields + ('password_confirmation', 'birthday',)
 
     def validate(self, data):
         if data["password"] != data.get("password_confirmation"):

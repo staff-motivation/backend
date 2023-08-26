@@ -28,17 +28,6 @@ class DepartmentName(models.TextChoices):
     NONE = 'None'
 
 
-class AllowedEmail(models.Model):
-    email = models.EmailField(unique=True)
-
-    class Meta:
-        verbose_name = "Разрешенные email"
-        verbose_name_plural = "Разрешенные email"
-
-    def __str__(self):
-        return self.email
-
-
 class Department(models.Model):
     name = models.CharField(
         verbose_name='Подразделение',
@@ -66,53 +55,53 @@ class Department(models.Model):
         return str(self.name)
 
 
-class Group(models.Model):
-    """
-    Модель для групп пользователей.
-    """
-    name = models.CharField(
-        verbose_name='Название',
-        max_length=MAX_LENGTH_USERNAME,
-        help_text='Введите название группы'
-    )
-    description = models.TextField(
-        verbose_name='Описание',
-        help_text='Введите описание группы'
-    )
-    image = models.ImageField(
-        verbose_name='Изображение',
-        help_text='Загрузите изображение',
-        upload_to='users/groups/%Y/%m/%d',
-        blank=True
-    )
+# class Group(models.Model):
+#     """
+#     Модель для групп пользователей.
+#     """
+#     name = models.CharField(
+#         verbose_name='Название',
+#         max_length=MAX_LENGTH_USERNAME,
+#         help_text='Введите название группы'
+#     )
+#     description = models.TextField(
+#         verbose_name='Описание',
+#         help_text='Введите описание группы'
+#     )
+#     image = models.ImageField(
+#         verbose_name='Изображение',
+#         help_text='Загрузите изображение',
+#         upload_to='users/groups/%Y/%m/%d',
+#         blank=True
+#     )
 
-    class Meta:
-        verbose_name = 'Группа'
-        verbose_name_plural = 'Группы'
+    # class Meta:
+    #     verbose_name = 'Группа'
+    #     verbose_name_plural = 'Группы'
+    #
+    # def __str__(self):
+    #     return str(self.name)
 
-    def __str__(self):
-        return str(self.name)
 
-
-class Bonus(models.Model):
-    name = models.CharField(
-        verbose_name='Название',
-        max_length=MAX_LENGTH_USERNAME,
-        help_text='Введите название бонуса'
-    )
-    bonus_points = models.IntegerField(
-        verbose_name='Бонусные очки'
-    )
-    privilege = models.TextField(
-        verbose_name='Привилегии',
-    )
-
-    class Meta:
-        verbose_name = 'Бонус'
-        verbose_name_plural = 'Бонусы'
-
-    def __str__(self):
-        return str(self.name)
+# class Bonus(models.Model):
+#     name = models.CharField(
+#         verbose_name='Название',
+#         max_length=MAX_LENGTH_USERNAME,
+#         help_text='Введите название бонуса'
+#     )
+#     bonus_points = models.IntegerField(
+#         verbose_name='Бонусные очки'
+#     )
+#     privilege = models.TextField(
+#         verbose_name='Привилегии',
+#     )
+#
+#     class Meta:
+#         verbose_name = 'Бонус'
+#         verbose_name_plural = 'Бонусы'
+#
+#     def __str__(self):
+#         return str(self.name)
 
 
 class UserRating(models.Model):
@@ -180,13 +169,6 @@ class User(AbstractUser):
         blank=True,
         related_name='users_department'
     )
-    groups = models.ManyToManyField(
-        Group,
-        verbose_name='Группа',
-        related_name='users_groups',
-        through='Membership',
-        blank=True
-    )
     image = models.ImageField(
         verbose_name='Изображение',
         help_text='Загрузите изображение',
@@ -246,13 +228,6 @@ class User(AbstractUser):
         null=True,
         blank=True,
         related_name='rating'
-    )
-    bonus = models.ForeignKey(
-        Bonus,
-        verbose_name='Бонусы',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
     )
     is_staff = models.BooleanField(
         verbose_name='Является ли пользователь персоналом',
@@ -320,30 +295,30 @@ class Contact(models.Model):
         return f"{self.user.first_name} - {self.platform}"
 
 
-class Membership(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name='Участник группы'
-    )
-    group = models.ForeignKey(
-        Group,
-        on_delete=models.CASCADE,
-        verbose_name='Группа'
-    )
-    date_joined = models.DateTimeField(
-        verbose_name='Дата присоединения',
-        auto_now_add=True
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'group'],
-                name='unique_group'
-            )
-        ]
-
-        verbose_name = 'Сообщество'
-        verbose_name_plural = 'Сообщества'
-        ordering = ('group',)
+# class Membership(models.Model):
+#     user = models.ForeignKey(
+#         User,
+#         on_delete=models.CASCADE,
+#         verbose_name='Участник группы'
+#     )
+#     group = models.ForeignKey(
+#         Group,
+#         on_delete=models.CASCADE,
+#         verbose_name='Группа'
+#     )
+#     date_joined = models.DateTimeField(
+#         verbose_name='Дата присоединения',
+#         auto_now_add=True
+#     )
+#
+#     class Meta:
+#         constraints = [
+#             models.UniqueConstraint(
+#                 fields=['user', 'group'],
+#                 name='unique_group'
+#             )
+#         ]
+#
+#         verbose_name = 'Сообщество'
+#         verbose_name_plural = 'Сообщества'
+#         ordering = ('group',)

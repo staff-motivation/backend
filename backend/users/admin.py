@@ -9,7 +9,7 @@ from django import forms
 
 
 from .models import (
-    Department, Bonus, Group, User, UserRating, Membership
+    Department, User, UserRating
 )
 
 
@@ -49,13 +49,12 @@ class CustomUserAdmin(UserAdmin):
     list_display = (
         'email', 'is_active', 'is_superuser',
         'role', 'position', 'experience', 'department',
-        'bonus',
     )
     search_fields = (
         'email', 'is_active',
         'position', 'experience', 'department',
     )
-    filter_vertical = ('groups',)
+    # filter_vertical = ('department',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Personal info'), {'fields': (
@@ -67,8 +66,7 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('is_active', 'is_staff', 'is_superuser',
                        'user_permissions', 'role'),
         }),
-        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
-        (_('Bonus'), {'fields': ('bonus',)}),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')})
     )
     add_fieldsets = (
         (None, {'fields': ('email', 'password1', 'password2')}),
@@ -82,7 +80,6 @@ class CustomUserAdmin(UserAdmin):
                        'user_permissions', 'role'),
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
-        (_('Bonus'), {'fields': ('bonus',)}),
     )
     inlines = [UserRatingInline]
 
@@ -116,20 +113,20 @@ class DepartmentAdmin(admin.ModelAdmin):
     user_count.short_description = 'Колличество участников'
 
 
-class GroupAdmin(admin.ModelAdmin):
-    model = Group
-    list_display = ('name',)
+# class GroupAdmin(admin.ModelAdmin):
+#     model = Group
+#     list_display = ('name',)
 
 
-class BonusAdmin(admin.ModelAdmin):
-    model = Bonus
-    list_display = ('bonus_points', 'privilege')
+# class BonusAdmin(admin.ModelAdmin):
+#     model = Bonus
+#     list_display = ('bonus_points', 'privilege')
 
 
-admin.site.register(Bonus, BonusAdmin)
-admin.site.register(Group, GroupAdmin)
+# # admin.site.register(Bonus, BonusAdmin)
+# admin.site.register(Group, GroupAdmin)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(UserRating, UserRatingAdmin)
-admin.site.register(Membership)
+# admin.site.register(Membership)
 
