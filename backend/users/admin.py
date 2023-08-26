@@ -6,15 +6,11 @@ from django.http import HttpResponse
 from django.urls import reverse
 from import_export import resources
 from django import forms
-from import_export.admin import ImportExportModelAdmin
+
 
 from .models import (
-    Department, Bonus, Group, User, UserRating, Membership, AllowedEmail
+    Department, User, UserRating
 )
-
-
-class ImportEmailsForm(forms.Form):
-    file = forms.FileField(label='Выберите файл')
 
 
 class UserRatingInline(admin.TabularInline):
@@ -49,43 +45,41 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserAdmin(UserAdmin):
     model = User
     add_form = CustomUserCreationForm
+    ordering = ['email']
     list_display = (
-        'username', 'email', 'is_active', 'is_superuser',
+        'email', 'is_active', 'is_superuser',
         'role', 'position', 'experience', 'department',
-        'bonus',
     )
     search_fields = (
-        'username', 'email', 'is_active',
+        'email', 'is_active',
         'position', 'experience', 'department',
     )
-    filter_vertical = ('groups',)
+    # filter_vertical = ('department',)
     fieldsets = (
-        (None, {'fields': ('username', 'password')}),
+        (None, {'fields': ('email', 'password')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name', 'second_name', 'email', 'birthday',
+            'first_name', 'last_name','birthday',
             'position', 'experience', 'department',
-            'user_rating', 'contact',
+            'user_rating',
         )}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser',
                        'user_permissions', 'role'),
         }),
-        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
-        (_('Bonus'), {'fields': ('bonus',)}),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')})
     )
     add_fieldsets = (
-        (None, {'fields': ('username', 'password1', 'password2')}),
+        (None, {'fields': ('email', 'password1', 'password2')}),
         (_('Personal info'), {'fields': (
-            'first_name', 'last_name', 'second_name', 'email', 'birthday',
+            'first_name', 'last_name', 'birthday',
             'position', 'experience', 'department',
-            'user_rating', 'contact',
+            'user_rating',
         )}),
         (_('Permissions'), {
             'fields': ('is_active', 'is_staff', 'is_superuser',
                        'user_permissions', 'role'),
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
-        (_('Bonus'), {'fields': ('bonus',)}),
     )
     inlines = [UserRatingInline]
 
@@ -93,11 +87,11 @@ class CustomUserAdmin(UserAdmin):
 class CustomUserInline(admin.TabularInline):
     model = User
     fields = (
-        'username', 'email', 'role', 'position',
+        'email', 'role', 'position',
         'experience', 'user_rating_actual',
     )
     readonly_fields = (
-        'username', 'email', 'role', 'position',
+        'email', 'role', 'position',
         'experience', 'user_rating_actual',
     )
     extra = 0
@@ -119,31 +113,20 @@ class DepartmentAdmin(admin.ModelAdmin):
     user_count.short_description = 'Колличество участников'
 
 
-class GroupAdmin(admin.ModelAdmin):
-    model = Group
-    list_display = ('name',)
+# class GroupAdmin(admin.ModelAdmin):
+#     model = Group
+#     list_display = ('name',)
 
 
-class BonusAdmin(admin.ModelAdmin):
-    model = Bonus
-    list_display = ('bonus_points', 'privilege')
+# class BonusAdmin(admin.ModelAdmin):
+#     model = Bonus
+#     list_display = ('bonus_points', 'privilege')
 
 
-class AllowedEmailResource(resources.ModelResource):
-    class Meta:
-        model = AllowedEmail
-        fields = ('email',)
-
-
-class AllowedEmailAdmin(ImportExportModelAdmin):
-    resource_class = AllowedEmailResource
-
-
-admin.site.register(AllowedEmail, AllowedEmailAdmin)
-admin.site.register(Bonus, BonusAdmin)
-admin.site.register(Group, GroupAdmin)
+# # admin.site.register(Bonus, BonusAdmin)
+# admin.site.register(Group, GroupAdmin)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(UserRating, UserRatingAdmin)
-admin.site.register(Membership)
+# admin.site.register(Membership)
 
