@@ -17,12 +17,6 @@ class CustomUserRetrieveSerializer(UserSerializer):
         model = User
         fields = ('first_name', 'last_name', 'birthday', 'email', 'hardskills')
 
-    # def to_representation(self, instance):
-    #     data = super().to_representation(instance)
-    #     data.pop('password', None)  # Удаляем поле "password" из данных
-    #     data.pop('id', None)  # Удаляем поле "id" из данных
-    #     return data
-
 
 class CustomUserCreateSerializer(UserCreateSerializer):
     password_confirmation = serializers.CharField(

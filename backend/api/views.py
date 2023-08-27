@@ -1,17 +1,8 @@
 from djoser.views import UserViewSet
-from .serializers import CustomUserCreateSerializer
-
-from api.serializers import (
-    CustomUserCreateSerializer,
-    CustomUserRetrieveSerializer
-)
+from .serializers import CustomUserCreateSerializer, CustomUserRetrieveSerializer
 from users.models import User
+from rest_framework.decorators import action
 
 
 class CustomUserViewSet(UserViewSet):
-    serializer_class = CustomUserCreateSerializer
-
-    def get_serializer_class(self):
-        if self.action in ['retrieve', 'me']:
-            return CustomUserRetrieveSerializer
-        return self.serializer_class
+    serializer_class = CustomUserRetrieveSerializer

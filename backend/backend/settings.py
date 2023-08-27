@@ -49,7 +49,8 @@ DJOSER = {
     'SEND_CONFIRMATION_EMAIL': False,
     'SERIALIZERS': {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
-        'user': 'api.serializers.CustomUserRetrieveSerializer'
+        'user': 'api.serializers.CustomUserRetrieveSerializer',
+        'current_user': 'api.serializers.CustomUserRetrieveSerializer'
     },
 
     'EMAIL_BACKEND': 'django.core.mail.backends.filebased.EmailBackend',
