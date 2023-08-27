@@ -1,5 +1,5 @@
 from users.models import User, CustomUserManager, Hardskill, UserHardskill
-from djoser.serializers import UserCreateSerializer
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 
 
@@ -8,6 +8,20 @@ class HardskillsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hardskill
         fields = ('name',)
+
+
+class CustomUserRetrieveSerializer(UserSerializer):
+    hardskills = HardskillsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'birthday', 'email', 'hardskills')
+
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+    #     data.pop('password', None)  # Удаляем поле "password" из данных
+    #     data.pop('id', None)  # Удаляем поле "id" из данных
+    #     return data
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
