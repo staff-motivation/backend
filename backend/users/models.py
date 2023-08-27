@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.conf import settings
 from django.db import models
+from django.db.models import UniqueConstraint
 
 from backend.settings import MAX_LENGTH_USERNAME, MAX_LENGTH_EMAIL
 
@@ -102,6 +103,25 @@ class Department(models.Model):
 #
 #     def __str__(self):
 #         return str(self.name)
+
+
+class Hardskill(models.Model):
+    """
+    Модель профессиональных навыков / хард скиллов пользователей.
+    """
+    name = models.CharField(
+        verbose_name='Хардскилл',
+        help_text='Введите профессиоанльный навык/хардскилл',
+        max_length=MAX_LENGTH_USERNAME,
+        blank=False
+    )
+
+    class Meta:
+        verbose_name = 'Хардскилл'
+        verbose_name_plural = 'Хардскиллы'
+
+        def __str__(self):
+            return self.name
 
 
 class UserRating(models.Model):
@@ -237,6 +257,10 @@ class User(AbstractUser):
         verbose_name='Активен ли пользователь',
         default=False
     )
+    hardskills = models.ManyToManyField(
+        Hardskill,
+        through='UserHardskill'
+    )
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -322,3 +346,33 @@ class Contact(models.Model):
 #         verbose_name = 'Сообщество'
 #         verbose_name_plural = 'Сообщества'
 #         ordering = ('group',)
+
+
+class UserHardskill(models.Model):
+    """
+    Промежуточная модель для хард скиллов пользователей.
+    """
+    user = models.ForeignKey(
+        User,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+        related_name='user_hardskill'
+    )
+    hardskill = models.ForeignKey(
+        Hardskill,
+        verbose_name='Хард скилл',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = 'Профессиональный навык пользователя'
+        verbose_name_plural = 'Профессиональные навыки пользователя'
+        constraints = [
+            UniqueConstraint(
+                fields=('user', 'hardskill'),
+                name='unique hardskill for user'
+            )
+        ]
+
+        def __str__(self):
+            return f'{self.user.first_name} - {self.hardskill}'
