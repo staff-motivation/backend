@@ -9,8 +9,22 @@ from django import forms
 
 
 from .models import (
-    Department, User, UserRating
+    Department, Hardskill, User, UserRating
 )
+
+
+class HardskillInline(admin.TabularInline):
+    model = User.hardskills.through
+    fields = ('hardskill',)
+    verbose_name = 'Профессиональный навык'
+    verbose_name_plural = 'Профессиональные навыки'
+    extra = 1
+
+
+class HardskillAdmin(admin.ModelAdmin):
+    model = Hardskill
+    list_display = ('name',)
+    search_fields = ('name',)
 
 
 class UserRatingInline(admin.TabularInline):
@@ -81,7 +95,7 @@ class CustomUserAdmin(UserAdmin):
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
-    inlines = [UserRatingInline]
+    inlines = [UserRatingInline, HardskillInline]
 
 
 class CustomUserInline(admin.TabularInline):
@@ -128,5 +142,6 @@ class DepartmentAdmin(admin.ModelAdmin):
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(UserRating, UserRatingAdmin)
+admin.site.register(Hardskill, HardskillAdmin)
 # admin.site.register(Membership)
 
