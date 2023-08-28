@@ -1,8 +1,10 @@
 from djoser.views import UserViewSet
 from .serializers import CustomUserCreateSerializer, CustomUserRetrieveSerializer
+from rest_framework import viewsets
+
 from users.models import User
-from rest_framework.decorators import action
 
 
 class CustomUserViewSet(UserViewSet):
+    queryset = User.objects.all()
     serializer_class = CustomUserRetrieveSerializer
