@@ -51,7 +51,8 @@ DJOSER = {
     'SERIALIZERS': {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
         'user': 'api.serializers.CustomUserRetrieveSerializer',
-        'current_user': 'api.serializers.CustomUserRetrieveSerializer'
+        'current_user': 'api.serializers.CustomUserRetrieveSerializer',
+        'user_update': 'api.serializers.CustomUserCreateSerializer'
     },
 
     'EMAIL_BACKEND': 'django.core.mail.backends.filebased.EmailBackend',

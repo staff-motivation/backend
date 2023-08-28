@@ -8,7 +8,7 @@ from rest_framework import serializers
 
 
 class AchievementSerializer(serializers.ModelSerializer):
-
+    image = serializers.ImageField(required=False)
     class Meta:
         model = Achievement
         fields = ('name', 'image', 'description')
@@ -24,7 +24,7 @@ class HardskillsSerializer(serializers.ModelSerializer):
 class CustomUserRetrieveSerializer(UserSerializer):
     hardskills = HardskillsSerializer(
         many=True,
-        read_only=True
+        required=False
     )
     achievements = AchievementSerializer(
         many=True,
@@ -36,6 +36,24 @@ class CustomUserRetrieveSerializer(UserSerializer):
         fields = (
             'first_name', 'last_name', 'birthday', 'email', 'hardskills', 'achievements'
         )
+
+    def update(self, instance, validated_data):
+        hardskills_data = validated_data.pop('hardskills', [])
+        achievements_data = validated_data.pop('achievements', [])
+        instance.hardskills.clear()
+        instance.achievements.clear()
+        for hardskill_data in hardskills_data:
+            hardskill, created = Hardskill.objects.get_or_create(name=hardskill_data['name'])
+            instance.hardskills.add(hardskill)
+        for achievement_data in achievements_data:
+            achievement, created = Achievement.objects.get_or_create(
+                name=achievement_data['name'],
+                defaults={'description': achievement_data.get('description', '')}
+            )
+            instance.achievements.add(achievement)
+
+        instance = super().update(instance, validated_data)
+        return instance
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
