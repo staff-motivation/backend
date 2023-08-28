@@ -1,6 +1,17 @@
-from users.models import User, CustomUserManager, Hardskill, UserHardskill
+from users.models import (
+    User, CustomUserManager,
+    Hardskill, UserHardskill,
+    Achievement, UserAchievement
+)
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
+
+
+class AchievementSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Achievement
+        fields = ('name', 'image', 'description')
 
 
 class HardskillsSerializer(serializers.ModelSerializer):
@@ -11,11 +22,20 @@ class HardskillsSerializer(serializers.ModelSerializer):
 
 
 class CustomUserRetrieveSerializer(UserSerializer):
-    hardskills = HardskillsSerializer(many=True, read_only=True)
+    hardskills = HardskillsSerializer(
+        many=True,
+        read_only=True
+    )
+    achievements = AchievementSerializer(
+        many=True,
+        required=False
+    )
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'birthday', 'email', 'hardskills')
+        fields = (
+            'first_name', 'last_name', 'birthday', 'email', 'hardskills', 'achievements'
+        )
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -27,9 +47,15 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         many=True,
         required=False
     )
+    achievements = AchievementSerializer(
+        many=True,
+        required=False
+    )
 
     class Meta(UserCreateSerializer.Meta):
-        fields = UserCreateSerializer.Meta.fields + ('password_confirmation', 'birthday', 'hardskills')
+        fields = UserCreateSerializer.Meta.fields + (
+            'password_confirmation', 'birthday', 'hardskills', 'achievements'
+        )
 
     def validate(self, data):
         if data["password"] != data.get("password_confirmation"):
@@ -48,18 +74,53 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         return data
 
     def create(self, validated_data):
-        if 'hardskills' not in self.initial_data:
+        if 'hardskills' not in self.initial_data and 'achievements' not in self.initial_data:
             password = validated_data.pop('password')
             user = self.Meta.model(**validated_data)
             user.set_password(password)
             user.save()
             return user
         
+        if 'hardskills' in self.initial_data and 'achievements' not in self.initial_data:
+            hardskills = validated_data.pop('hardskills')
+            password = validated_data.pop('password')
+            user = self.Meta.model(**validated_data)
+            user.set_password(password)
+            user.save()
+            for hardskill in hardskills:
+                current_hardskill, status = Hardskill.objects.get_or_create(**hardskill)
+                UserHardskill.objects.create(
+                    hardskill=current_hardskill,
+                    user=user
+                )
+            return user
+
+        if 'achievements' in self.initial_data and 'hardskills' not in self.initial_data:
+            achievements = validated_data.pop('achievements')
+            password = validated_data.pop('password')
+            user = self.Meta.model(**validated_data)
+            user.set_password(password)
+            user.save()
+            for achievement in achievements:
+                current_achievement, status = Achievement.objects.get_or_create(**achievement)
+                UserAchievement.objects.create(
+                    achievement=current_achievement,
+                    user=user
+                )
+            return user
+        
+        achievements = validated_data.pop('achievements')
         hardskills = validated_data.pop('hardskills')
         password = validated_data.pop('password')
         user = self.Meta.model(**validated_data)
         user.set_password(password)
         user.save()
+        for achievement in achievements:
+            current_achievement, status = Achievement.objects.get_or_create(**achievement)
+            UserAchievement.objects.create(
+                achievement=current_achievement,
+                user=user
+            )
         for hardskill in hardskills:
             current_hardskill, status = Hardskill.objects.get_or_create(**hardskill)
             UserHardskill.objects.create(

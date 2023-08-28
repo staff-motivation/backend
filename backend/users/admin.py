@@ -6,10 +6,11 @@ from django.http import HttpResponse
 from django.urls import reverse
 from import_export import resources
 from django import forms
+from django.utils.safestring import mark_safe
 
 
 from .models import (
-    Department, Hardskill, User, UserRating
+    Achievement, Department, Hardskill, User, UserRating
 )
 
 
@@ -25,6 +26,24 @@ class HardskillAdmin(admin.ModelAdmin):
     model = Hardskill
     list_display = ('name',)
     search_fields = ('name',)
+
+
+class AchievementInline(admin.TabularInline):
+    model = User.achievements.through
+    fields = ('achievement',)
+    verbose_name = 'Достижение'
+    verbose_name_plural = 'Достижения'
+    extra = 1
+
+
+class AchievementAdmin(admin.ModelAdmin):
+    model = Achievement
+    list_display = ('get_image', 'name', 'description')
+    search_fields = ('name',)
+
+    def get_image(self, obj):
+        if obj.image:
+            return mark_safe(f"<img src='{obj.image.url}' width=50>")
 
 
 class UserRatingInline(admin.TabularInline):
@@ -95,7 +114,7 @@ class CustomUserAdmin(UserAdmin):
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
-    inlines = [UserRatingInline, HardskillInline]
+    inlines = [UserRatingInline, HardskillInline, AchievementInline]
 
 
 class CustomUserInline(admin.TabularInline):
@@ -143,5 +162,6 @@ admin.site.register(Department, DepartmentAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(UserRating, UserRatingAdmin)
 admin.site.register(Hardskill, HardskillAdmin)
+admin.site.register(Achievement, AchievementAdmin)
 # admin.site.register(Membership)
 

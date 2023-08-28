@@ -261,6 +261,10 @@ class User(AbstractUser):
         Hardskill,
         through='UserHardskill'
     )
+    achievements = models.ManyToManyField(
+        'Achievement',
+        through='UserAchievement'
+    )
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -376,3 +380,63 @@ class UserHardskill(models.Model):
 
         def __str__(self):
             return f'{self.user.first_name} - {self.hardskill}'
+
+
+class Achievement(models.Model):
+    """
+    Модель достижений пользователей.
+    """
+    name = models.CharField(
+        verbose_name='Достижение',
+        help_text='Введите достижение',
+        max_length=MAX_LENGTH_USERNAME,
+        blank=False
+    )
+    image = models.ImageField(
+        verbose_name='Изображение',
+        help_text='Загрузите изображение',
+        upload_to='users/achievements/%Y/%m/%d',
+        blank=True
+    )
+    description = models.CharField(
+        verbose_name='Описание достижения',
+        max_length=MAX_LENGTH_USERNAME,
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Достижение'
+        verbose_name_plural = 'Достижения'
+
+        def __str__(self):
+            return self.name
+
+
+class UserAchievement(models.Model):
+    """
+    Промежуточная модель для достижений пользователей.
+    """
+    user = models.ForeignKey(
+        User,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+        related_name='user_achievement'
+    )
+    achievement = models.ForeignKey(
+        Achievement,
+        verbose_name='Достижение',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = 'Достижение пользователя'
+        verbose_name_plural = 'Достижения пользователя'
+        constraints = [
+            UniqueConstraint(
+                fields=('user', 'achievement'),
+                name='unique achievement for user'
+            )
+        ]
+
+        def __str__(self):
+            return f'{self.user.first_name} - {self.achievement}'
