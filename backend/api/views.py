@@ -33,7 +33,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         if not request.user.is_teamleader:
-            return Response({"detail": "You are not a team leader."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "Задачи может создавать только Тимлид."}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = TaskSerializer(data=request.data)
         if serializer.is_valid():
@@ -47,10 +47,10 @@ class TaskViewSet(viewsets.ModelViewSet):
     def start_task(self, request, pk=None):
         task = self.get_object()
         if not task.assignees.filter(pk=request.user.pk).exists():
-            return Response({"detail": "You are not assigned to this task."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "Это не ваша задача."}, status=status.HTTP_403_FORBIDDEN)
 
         if task.status != 'created':
-            return Response({"detail": "Task is not in the 'created' status."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Задача еще не создана."}, status=status.HTTP_400_BAD_REQUEST)
 
         task.status = 'in_progress'
         task.start_date = timezone.now()
@@ -61,11 +61,11 @@ class TaskViewSet(viewsets.ModelViewSet):
     def complete_task(self, request, pk=None):
         task = self.get_object()
         if not request.user.is_teamleader:
-            return Response({"detail": "You are not a team leader."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "Задачи может завершать только Тимлид.."}, status=status.HTTP_403_FORBIDDEN)
 
         status_data = request.data.get('status')
         if status_data not in ['completed', 'returned_for_revision']:
-            return Response({"detail": "Invalid status value."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Неверный статус задачи"}, status=status.HTTP_400_BAD_REQUEST)
 
         task.status = status_data
         task.save()
