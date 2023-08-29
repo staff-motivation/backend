@@ -56,55 +56,6 @@ class Department(models.Model):
         return str(self.name)
 
 
-# class Group(models.Model):
-#     """
-#     Модель для групп пользователей.
-#     """
-#     name = models.CharField(
-#         verbose_name='Название',
-#         max_length=MAX_LENGTH_USERNAME,
-#         help_text='Введите название группы'
-#     )
-#     description = models.TextField(
-#         verbose_name='Описание',
-#         help_text='Введите описание группы'
-#     )
-#     image = models.ImageField(
-#         verbose_name='Изображение',
-#         help_text='Загрузите изображение',
-#         upload_to='users/groups/%Y/%m/%d',
-#         blank=True
-#     )
-
-    # class Meta:
-    #     verbose_name = 'Группа'
-    #     verbose_name_plural = 'Группы'
-    #
-    # def __str__(self):
-    #     return str(self.name)
-
-
-# class Bonus(models.Model):
-#     name = models.CharField(
-#         verbose_name='Название',
-#         max_length=MAX_LENGTH_USERNAME,
-#         help_text='Введите название бонуса'
-#     )
-#     bonus_points = models.IntegerField(
-#         verbose_name='Бонусные очки'
-#     )
-#     privilege = models.TextField(
-#         verbose_name='Привилегии',
-#     )
-#
-#     class Meta:
-#         verbose_name = 'Бонус'
-#         verbose_name_plural = 'Бонусы'
-#
-#     def __str__(self):
-#         return str(self.name)
-
-
 class Hardskill(models.Model):
     """
     Модель профессиональных навыков / хард скиллов пользователей.
@@ -321,35 +272,6 @@ class Contact(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} - {self.platform}"
-
-
-# class Membership(models.Model):
-#     user = models.ForeignKey(
-#         User,
-#         on_delete=models.CASCADE,
-#         verbose_name='Участник группы'
-#     )
-#     group = models.ForeignKey(
-#         Group,
-#         on_delete=models.CASCADE,
-#         verbose_name='Группа'
-#     )
-#     date_joined = models.DateTimeField(
-#         verbose_name='Дата присоединения',
-#         auto_now_add=True
-#     )
-#
-#     class Meta:
-#         constraints = [
-#             models.UniqueConstraint(
-#                 fields=['user', 'group'],
-#                 name='unique_group'
-#             )
-#         ]
-#
-#         verbose_name = 'Сообщество'
-#         verbose_name_plural = 'Сообщества'
-#         ordering = ('group',)
 
 
 class UserHardskill(models.Model):

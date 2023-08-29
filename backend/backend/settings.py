@@ -52,15 +52,12 @@ DJOSER = {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
         'user': 'api.serializers.CustomUserRetrieveSerializer',
         'current_user': 'api.serializers.CustomUserRetrieveSerializer',
-        'user_update': 'api.serializers.CustomUserCreateSerializer'
     },
-
     'EMAIL_BACKEND': 'django.core.mail.backends.filebased.EmailBackend',
     'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails')
 }
-
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'mails')
+EMAIL_BACKEND: 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH: os.path.join(BASE_DIR, 'mails')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
