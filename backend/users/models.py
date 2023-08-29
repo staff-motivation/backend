@@ -110,7 +110,7 @@ class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-
+        extra_fields.setdefault('is_active', True)
         if not email:
             raise ValueError('Поле email обязательно к заполнению')
 
