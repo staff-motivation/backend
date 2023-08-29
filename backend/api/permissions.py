@@ -1,17 +1,12 @@
 from rest_framework import permissions
 
-class CanEditOwnData(permissions.BasePermission):
+
+class CanEditUserFields(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        # Пользователь может редактировать только свои данные
-        return request.user == obj
+        if request.user.is_teamleader:
+            return True
 
-class CanEditSkillsAndAchievements(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        # Пользователь (или teamleader) может редактировать хардскилы и достижения
-        # Самого себя или другого пользователя, но только если он teamleader
-        return (
-            request.user.is_authenticated and
-            (request.user == obj or request.user.is_teamleader)
-        )
+        if request.user == obj:
+            return request.method in permissions.SAFE_METHODS or request.method in ['PATCH', 'PUT'] and not hasattr(obj, 'achievements') and not hasattr(obj, 'hardskills')
 
-
+        return request.method in permissions.SAFE_METHODS

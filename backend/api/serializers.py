@@ -4,9 +4,10 @@ from users.models import (
     Achievement, UserAchievement
 )
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from rest_framework import serializers
-from .permissions import CanEditSkillsAndAchievements, CanEditOwnData
-
+from rest_framework import serializers, permissions
+from users.models import User
+from .permissions import CanEditUserFields
+from rest_framework.exceptions import PermissionDenied
 
 class AchievementSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
@@ -25,20 +26,18 @@ class HardskillsSerializer(serializers.ModelSerializer):
 class CustomUserRetrieveSerializer(UserSerializer):
     hardskills = HardskillsSerializer(many=True, required=False)
     achievements = AchievementSerializer(many=True, required=False)
+    hardskills_read_only = serializers.BooleanField(read_only=True, default=False)
+    achievements_read_only = serializers.BooleanField(read_only=True, default=False)
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'birthday', 'email', 'hardskills', 'achievements')
+        fields = ('first_name', 'last_name', 'birthday', 'email', 'hardskills', 'achievements', 'hardskills_read_only', 'achievements_read_only')
 
     def update(self, instance, validated_data):
-        can_edit_skills_achievements = CanEditSkillsAndAchievements().has_object_permission(
-            self.context['request'], None, instance
-        )
-
         hardskills_data = validated_data.pop('hardskills', [])
         achievements_data = validated_data.pop('achievements', [])
 
-        if can_edit_skills_achievements:
+        if self.context['request'].user.is_teamleader:
             instance.hardskills.clear()
             instance.achievements.clear()
 
@@ -52,10 +51,14 @@ class CustomUserRetrieveSerializer(UserSerializer):
                     defaults={'description': achievement_data.get('description', '')}
                 )
                 instance.achievements.add(achievement)
+        else:
+            validated_data['hardskills_read_only'] = instance.hardskills.all()
+            validated_data['achievements_read_only'] = instance.achievements.all()
 
-            instance = super().update(instance, validated_data)
-
+        instance = super().update(instance, validated_data)
         return instance
+
+
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):

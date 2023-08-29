@@ -53,6 +53,11 @@ DJOSER = {
         'user': 'api.serializers.CustomUserRetrieveSerializer',
         'current_user': 'api.serializers.CustomUserRetrieveSerializer',
     },
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.IsAuthenticated'],
+        'user': ['api.permissions.CanEditUserFields'],
+        'user_delete': ['rest_framework.permissions.IsAdminUser'],
+    },
     'EMAIL_BACKEND': 'django.core.mail.backends.filebased.EmailBackend',
     'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails')
 }
