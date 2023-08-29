@@ -6,8 +6,10 @@ from users.models import (
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, permissions
 from users.models import User
+from tasks.models import Task
 from .permissions import CanEditUserFields
 from rest_framework.exceptions import PermissionDenied
+
 
 class AchievementSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
@@ -31,7 +33,16 @@ class CustomUserRetrieveSerializer(UserSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'birthday', 'email', 'hardskills', 'achievements', 'hardskills_read_only', 'achievements_read_only')
+        fields = ('first_name',
+                  'last_name',
+                  'birthday',
+                  'email',
+                  'hardskills',
+                  'achievements',
+                  'role',
+                  'position',
+                  'hardskills_read_only',
+                  'achievements_read_only')
 
     def update(self, instance, validated_data):
         hardskills_data = validated_data.pop('hardskills', [])
@@ -42,7 +53,8 @@ class CustomUserRetrieveSerializer(UserSerializer):
             instance.achievements.clear()
 
             for hardskill_data in hardskills_data:
-                hardskill, created = Hardskill.objects.get_or_create(name=hardskill_data['name'])
+                hardskill, created = Hardskill.objects.get_or_create(
+                    name=hardskill_data['name'])
                 instance.hardskills.add(hardskill)
 
             for achievement_data in achievements_data:
@@ -59,10 +71,10 @@ class CustomUserRetrieveSerializer(UserSerializer):
         return instance
 
 
-
-
 class CustomUserCreateSerializer(UserCreateSerializer):
-    password_confirmation = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    password_confirmation = serializers.CharField(
+        write_only=True,
+        style={'input_type': 'password'})
 
     class Meta(UserCreateSerializer.Meta):
         fields = UserCreateSerializer.Meta.fields + (
@@ -91,4 +103,14 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         user.set_password(password)
         user.save()
         return user
-    
+
+
+class TaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ['id', 'title', 'assignees', 'description', 'deadline']
+        read_only_fields = ['creator']
+
+
+class TaskStatusUpdateSerializer(serializers.Serializer):
+    status = serializers.CharField(max_length=max(len(choice[0]) for choice in Task.STATUS_CHOICES))

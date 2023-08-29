@@ -58,11 +58,9 @@ DJOSER = {
         'user': ['api.permissions.CanEditUserFields'],
         'user_delete': ['rest_framework.permissions.IsAdminUser'],
     },
-    'EMAIL_BACKEND': 'django.core.mail.backends.filebased.EmailBackend',
+    'EMAIL_BACKEND': 'django.core.mail.backends.console.EmailBackend',
     'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails')
 }
-EMAIL_BACKEND: 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH: os.path.join(BASE_DIR, 'mails')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

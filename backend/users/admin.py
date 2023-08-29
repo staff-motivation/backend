@@ -7,11 +7,17 @@ from django.urls import reverse
 from import_export import resources
 from django import forms
 from django.utils.safestring import mark_safe
-
+from tasks.models import Task
 
 from .models import (
     Achievement, Department, Hardskill, User
 )
+
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title', 'creator', 'start_date', 'deadline', 'status']
+    list_filter = ['status', 'creator']
+    search_fields = ['id', 'title', 'description']
+
 
 
 class HardskillInline(admin.TabularInline):
@@ -44,28 +50,6 @@ class AchievementAdmin(admin.ModelAdmin):
     def get_image(self, obj):
         if obj.image:
             return mark_safe(f"<img src='{obj.image.url}' width=50>")
-
-
-# class UserRatingInline(admin.TabularInline):
-#     model = UserRating
-#     fields = (
-#         'kpi_name', 'kpi_category',
-#         'target', 'actual', 'date'
-#     )
-#     readonly_fields = (
-#         'kpi_name', 'kpi_category',
-#         'target', 'actual', 'date'
-#     )
-#     extra = 0
-#
-#
-# class UserRatingAdmin(admin.ModelAdmin):
-#     model = UserRating
-#     list_display = (
-#         'kpi_name', 'kpi_category',
-#         'target', 'actual', 'date'
-#     )
-#     search_fields = ('kpi_name', 'kpi_category',)
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -115,51 +99,9 @@ class CustomUserAdmin(UserAdmin):
     inlines = [HardskillInline, AchievementInline]
 
 
-# class CustomUserInline(admin.TabularInline):
-#     model = User
-#     fields = (
-#         'email', 'role', 'position',
-#         'experience', 'user_rating_actual',
-#     )
-#     readonly_fields = (
-#         'email', 'role', 'position',
-#         'experience', 'user_rating_actual',
-#     )
-#     extra = 0
-#
-#     def user_rating_actual(self, obj):
-#         return obj.user_rating.actual
-#
-#     user_rating_actual.short_description = 'Актульный KPI работника'
-
-#
-# class DepartmentAdmin(admin.ModelAdmin):
-#     model = Department
-#     list_display = ('name', 'user_count')
-#     inlines = [CustomUserInline]
-#
-#     def user_count(self, obj):
-#         return obj.users_department.count()
-#
-#     user_count.short_description = 'Колличество участников'
-
-
-# class GroupAdmin(admin.ModelAdmin):
-#     model = Group
-#     list_display = ('name',)
-
-
-# class BonusAdmin(admin.ModelAdmin):
-#     model = Bonus
-#     list_display = ('bonus_points', 'privilege')
-
-
-# # admin.site.register(Bonus, BonusAdmin)
-# admin.site.register(Group, GroupAdmin)
-# admin.site.register(Department, DepartmentAdmin)
+admin.site.register(Task, TaskAdmin)
 admin.site.register(User, CustomUserAdmin)
-# admin.site.register(UserRating, UserRatingAdmin)
 admin.site.register(Hardskill, HardskillAdmin)
 admin.site.register(Achievement, AchievementAdmin)
-# admin.site.register(Membership)
+
 
