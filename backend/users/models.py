@@ -111,6 +111,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         extra_fields.setdefault('is_active', True)
+
         if not email:
             raise ValueError('Поле email обязательно к заполнению')
 
@@ -124,6 +125,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
+
         return self.create_user(email, password, **extra_fields)
 
 

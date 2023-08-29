@@ -97,13 +97,6 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         data.pop("password_confirmation")
         return data
 
-    def create(self, validated_data):
-        password = validated_data.pop('password')
-        user = self.Meta.model(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
-
 
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
