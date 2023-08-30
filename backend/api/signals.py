@@ -7,8 +7,11 @@ from django.core.mail import send_mail
 def send_registration_email(sender, user, request, **kwargs):
     try:
         subject = 'Регистрация успешна'
-        message = 'Ваш аккаунт успешно зарегистрирован. Дождитесь активации вашего аккаунта Отделом Кадров'
-        from_email = 'noreply@example.com'
+        message = (
+            'Ваш аккаунт успешно зарегистрирован.'
+            'Дождитесь активации вашего аккаунта Отделом Кадров'
+        )
+        from_email = 'sys.motivation@gmail.com'
         recipient_list = [user.email]
         print(f"Sending email to: {recipient_list}")
 
@@ -17,3 +20,7 @@ def send_registration_email(sender, user, request, **kwargs):
 
     except Exception as e:
         print(f"Error sending email: {e}")
+
+#password - Motivate!123
+#gmail - sys.motivation@gmail.com
+#'noreply@example.com'
