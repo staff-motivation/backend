@@ -45,7 +45,6 @@ class CustomUserRetrieveSerializer(UserSerializer):
                   'hardskills_read_only',
                   'achievements_read_only',
                   'reward_points')
-                  'reward_points ')
 
     def update(self, instance, validated_data):
         hardskills_data = validated_data.pop('hardskills', [])
@@ -102,6 +101,9 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    team_leader = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    status = serializers.CharField(default='created')
+
     class Meta:
         model = Task
         fields = '__all__'
