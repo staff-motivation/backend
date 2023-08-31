@@ -32,7 +32,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                 user = User.objects.get(id=user_id)
                 TaskInvitation.objects.create(task=task, user=user)
 
-            return Response({"message": "Task created successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Задача успешно создана"}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -51,7 +51,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                 })
             return Response({'tasks': task_data})
         else:
-            return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Неавторизованный пользователь'}, status=status.HTTP_401_UNAUTHORIZED)
 
     # @action(detail=True, methods=['POST'])
     # def invite_users(self, request, pk=None):
@@ -85,7 +85,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             user = User.objects.get(id=user_id)
             TaskInvitation.objects.create(task=task, user=user)
 
-        return Response({"message": "Users invited successfully"}, status=status.HTTP_200_OK)
+        return Response({"message": "Сотрудники добавлены в задачу"}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['POST'])
     def review_task(self, request, pk=None):
@@ -100,14 +100,14 @@ class TaskViewSet(viewsets.ModelViewSet):
                 TaskUpdate.objects.create(task=task, user=user, status='completed')
                 user.reward_points += task.reward_points
                 user.save()
-            return Response({"message": "Task approved and completed"}, status=status.HTTP_200_OK)
+            return Response({"message": "Принята и выполнена"}, status=status.HTTP_200_OK)
         elif review_status == 'reject':
             task.status = 'Возвращена на доработку'
             task.save()
             TaskUpdate.objects.create(task=task, user=user, status='returned_for_revision')
-            return Response({"message": "Task rejected"}, status=status.HTTP_200_OK)
+            return Response({"message": "Задача возвращена на доработку"}, status=status.HTTP_200_OK)
         else:
-            return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Неверный статус"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['POST'])
     def accept_invitation(self, request, pk=None):
@@ -119,7 +119,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         invitation.save()
 
         task.assigned_to.add(user)
-        return Response({"message": "User accepted the invitation and joined the task"}, status=status.HTTP_200_OK)
+        return Response({"message": "Сотрудник приступил к задаче"}, status=status.HTTP_200_OK)
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
