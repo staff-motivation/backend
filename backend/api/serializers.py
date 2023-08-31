@@ -6,7 +6,7 @@ from users.models import (
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, permissions
 from users.models import User
-from tasks.models import Task
+from tasks.models import Task, TaskUpdate, TaskInvitation
 from .permissions import CanEditUserFields
 from rest_framework.exceptions import PermissionDenied
 
@@ -30,6 +30,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
     achievements = AchievementSerializer(many=True, required=False)
     hardskills_read_only = serializers.BooleanField(read_only=True, default=False)
     achievements_read_only = serializers.BooleanField(read_only=True, default=False)
+    reward_points = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = User
@@ -42,7 +43,8 @@ class CustomUserRetrieveSerializer(UserSerializer):
                   'role',
                   'position',
                   'hardskills_read_only',
-                  'achievements_read_only')
+                  'achievements_read_only',
+                  'reward_points ')
 
     def update(self, instance, validated_data):
         hardskills_data = validated_data.pop('hardskills', [])
@@ -101,9 +103,16 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ['id', 'title', 'assignees', 'description', 'deadline']
-        read_only_fields = ['creator']
+        fields = '__all__'
 
 
-class TaskStatusUpdateSerializer(serializers.Serializer):
-    status = serializers.CharField(max_length=max(len(choice[0]) for choice in Task.STATUS_CHOICES))
+class TaskUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskUpdate
+        fields = '__all__'
+
+
+class TaskInvitationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskInvitation
+        fields = '__all__'

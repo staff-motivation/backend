@@ -14,8 +14,8 @@ from .models import (
 )
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'creator', 'start_date', 'deadline', 'status']
-    list_filter = ['status', 'creator']
+    list_display = ['id', 'title', 'team_leader', 'deadline', 'status']
+    list_filter = ['status', 'team_leader']
     search_fields = ['id', 'title', 'description']
 
 
