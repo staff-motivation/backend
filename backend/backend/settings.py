@@ -146,9 +146,25 @@ AUTH_USER_MODEL = 'users.User'
 settings.DATE_FORMAT = 'd.m.Y'
 ru_formats.DATE_FORMAT = 'd.m.Y'
 
+# Вариант рассылки для отладки кода
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 25
 EMAIL_HOST_USER = 'sys.motivation@gmail.com'
 EMAIL_HOST_PASSWORD = 'Motivate!123'
 EMAIL_USE_TLS = False
+
+# Продуктовый вариант - требует указать почту яндекса
+# и приложить к ней пароль приложения.
+
+# EMAIL_HOST = 'smtp.yandex.ru'
+# EMAIL_PORT = 465
+# EMAIL_USE_SSL = True
+# DEFAULT_FROM_EMAIL = 'exmple@yandex.ru'
+# # емейл, который будет указан в поле "От кого".
+# EMAIL_HOST_USER = 'exmple@yandex.ru'
+# # ваш емейл на Яндексе. Как правило, идентичен предыдущему пункту
+# EMAIL_HOST_PASSWORD = 'тут-долже-быть-пароль-приложения'
+# # пароль ПРИЛОЖЕНИЯ, который нужно создать в настройках Яндекса заранее.
+# #  Это не пароль от вашего емейла!
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
