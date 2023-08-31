@@ -76,6 +76,17 @@ class TaskViewSet(viewsets.ModelViewSet):
         return Response({'status': 'Task accepted and status changed to "in_progress"'})
 
     @action(detail=True, methods=['POST'])
+    def invite_users(self, request, pk=None):
+        task = self.get_object()
+        invited_user_ids = request.data.get('invited_users', [])
+
+        for user_id in invited_user_ids:
+            user = User.objects.get(id=user_id)
+            TaskInvitation.objects.create(task=task, user=user)
+
+        return Response({"message": "Users invited successfully"}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['POST'])
     def review_task(self, request, pk=None):
         task = self.get_object()
         user = self.request.user
