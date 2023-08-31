@@ -3,12 +3,13 @@ from .serializers import CustomUserCreateSerializer, CustomUserRetrieveSerialize
 from rest_framework import viewsets, status
 from rest_framework import permissions
 from rest_framework.decorators import action
-from users.models import User
-from tasks.models import Task
-from .permissions import CanEditUserFields, IsTaskCreator, CanViewAllTasks, \
-    CanCreateEditDeleteTasks, CanStartTask, CanCompleteTask, CanEditStatus
+from users.models import User, Hardskill, Achievement, UserHardskill, UserAchievement
+from tasks.models import Task, TaskUpdate, TaskInvitation, STATUS_CHOICES
 
-from .serializers import TaskSerializer, TaskStatusUpdateSerializer
+from .permissions import CanEditUserFields, IsTaskCreator, CanViewAllTasks, \
+    CanCreateEditDeleteTasks, CanStartTask, CanCompleteTask, CanEditStatus, IsTeamLeader
+
+from .serializers import TaskSerializer, TaskUpdateSerializer, TaskInvitationSerializer, HardskillsSerializer, AchievementSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
@@ -16,64 +17,98 @@ from rest_framework.response import Response
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
 
-    def get_permissions(self):
-        if self.action == 'list':
-            return [CanViewAllTasks()]
-        elif self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [CanCreateEditDeleteTasks()]
-        elif self.action == 'start_task':
-            return [CanStartTask()]
-        elif self.action == 'complete_task':
-            return [CanCompleteTask()]
-        elif self.action == 'update_status':
-            return [CanEditStatus()]
-        return super().get_permissions()
-
-    def create(self, request, *args, **kwargs):
-        if not request.user.is_teamleader:
-            return Response({"detail": "Задачи может создавать только Тимлид."}, status=status.HTTP_403_FORBIDDEN)
-
+    @action(detail=False, methods=['POST'])
+    def create_task(self, request):
         serializer = TaskSerializer(data=request.data)
         if serializer.is_valid():
+            task = serializer.save()
 
-            serializer.validated_data['creator'] = request.user
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            task.status = 'created'
+            task.save()
 
-    @action(detail=True, methods=['post'])
-    def start_task(self, request, pk=None):
+            invited_user_ids = request.data.get('assigned_to', [])
+            for user_id in invited_user_ids:
+                user = User.objects.get(id=user_id)
+                TaskInvitation.objects.create(task=task, user=user)
+
+            return Response({"message": "Task created successfully"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def list(self, request):
+        user = request.user
+        tasks = self.queryset.filter(assigned_to=user)
+        
+        task_data = []
+        for task in tasks:
+            task_data.append({
+                'title': task.title,
+                'description': task.description,
+                'deadline': task.deadline,
+                'reward_points': task.reward_points,
+                'status': task.status
+            })
+        
+        return Response({'tasks': task_data})
+
+    @action(detail=True, methods=['POST'])
+    def invite_users(self, request, pk=None):
         task = self.get_object()
-        if not task.assignees.filter(pk=request.user.pk).exists():
-            return Response({"detail": "Это не ваша задача."}, status=status.HTTP_403_FORBIDDEN)
+        invited_user_ids = request.data.get('assigned_to', [])
 
-        if task.status != 'created':
-            return Response({"detail": "Задача еще не создана."}, status=status.HTTP_400_BAD_REQUEST)
+        for user_id in invited_user_ids:
+            user = User.objects.get(id=user_id)
+            TaskInvitation.objects.create(task=task, user=user)
+
+        return Response({"message": "Users invited successfully"}, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['POST'])
+    def accept_task(self, request, pk=None):
+        task = self.get_object()
+        user = request.user
+
+        if user not in task.assigned_to.all():
+            return Response({'error': 'You are not invited to this task'}, status=status.HTTP_400_BAD_REQUEST)
 
         task.status = 'in_progress'
-        task.start_date = timezone.now()
         task.save()
-        return Response(TaskSerializer(task).data)
+        return Response({'status': 'Task accepted and status changed to "in_progress"'})
 
-    @action(detail=True, methods=['post'])
-    def complete_task(self, request, pk=None):
+    @action(detail=True, methods=['POST'])
+    def review_task(self, request, pk=None):
         task = self.get_object()
-        if not request.user.is_teamleader:
-            return Response({"detail": "Задачи может завершать только Тимлид.."}, status=status.HTTP_403_FORBIDDEN)
+        user = self.request.user
+        status = request.data.get('status', '')
 
-        status_data = request.data.get('status')
-        if status_data not in ['completed', 'returned_for_revision']:
-            return Response({"detail": "Неверный статус задачи"}, status=status.HTTP_400_BAD_REQUEST)
+        if status == 'approve':
+            with transaction.atomic():
+                TaskUpdate.objects.create(task=task, user=user, status='completed')
+                user.reward_points += task.reward_points
+                user.save()
+            return Response({"message": "Task approved and completed"}, status=status.HTTP_200_OK)
+        elif status == 'reject':
+            TaskUpdate.objects.create(task=task, user=user, status='returned_for_revision')
+            return Response({"message": "Task rejected"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)
 
-        task.status = status_data
-        task.save()
-        return Response(TaskSerializer(task).data)
+    @action(detail=True, methods=['POST'])
+    def accept_invitation(self, request, pk=None):
+        task = self.get_object()
+        user = self.request.user
+
+        invitation = get_object_or_404(TaskInvitation, task=task, user=user, accepted=False)
+        invitation.accepted = True
+        invitation.save()
+
+        task.assigned_to.add(user)
+        return Response({"message": "User accepted the invitation and joined the task"}, status=status.HTTP_200_OK)
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
+    serializer_class = CustomUserRetrieveSerializer
 
     def get_permissions(self):
         if self.action == 'create':
@@ -89,3 +124,38 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             return [IsAdminUser()]
 
         return super().get_permissions()
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsTeamLeader])
+    def add_hardskills(self, request, pk=None):
+        user = self.get_object()
+        hardskills_data = request.data.get('hardskills', [])
+
+        for hardskill_data in hardskills_data:
+            hardskill, created = Hardskill.objects.get_or_create(name=hardskill_data['name'])
+            user.hardskills.add(hardskill)
+
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsTeamLeader])
+    def add_achievements(self, request, pk=None):
+        user = self.get_object()
+        achievements_data = request.data.get('achievements', [])
+
+        for achievement_data in achievements_data:
+            achievement, created = Achievement.objects.get_or_create(
+                name=achievement_data['name'],
+                defaults={'description': achievement_data.get('description', '')}
+            )
+            if 'image' in achievement_data:
+                achievement.image = achievement_data['image']
+            achievement.save()
+
+            UserAchievement.objects.update_or_create(
+                user=user,
+                achievement=achievement,
+                defaults={}
+            )
+
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

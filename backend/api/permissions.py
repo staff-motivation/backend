@@ -2,6 +2,12 @@ from rest_framework import permissions
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
+class IsTeamLeader(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Проверка, является ли пользователь лидером команды
+        return request.user.is_authenticated and request.user.is_teamleader
+
+
 class CanViewAllTasks(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated

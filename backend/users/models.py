@@ -57,14 +57,12 @@ class Department(models.Model):
 
 
 class Hardskill(models.Model):
-    """
-    Модель профессиональных навыков / хард скиллов пользователей.
-    """
     name = models.CharField(
         verbose_name='Хардскилл',
         help_text='Введите профессиоанльный навык/хардскилл',
         max_length=MAX_LENGTH_USERNAME,
-        blank=False
+        blank=False,
+        unique=True
     )
 
     class Meta:
@@ -75,35 +73,35 @@ class Hardskill(models.Model):
             return self.name
 
 
-class UserRating(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='user_ratings')
-    kpi_name = models.CharField(
-        verbose_name='Название KPI',
-        max_length=MAX_LENGTH_USERNAME
-    )
-    kpi_category = models.CharField(
-        verbose_name='Категория KPI',
-        max_length=MAX_LENGTH_USERNAME
-    )
-    target = models.IntegerField(
-        verbose_name='Целовой показатель KPI',
-    )
-    actual = models.IntegerField(
-        verbose_name='Актуальный показатель KPI',
-    )
-    date = models.DateField(
-        verbose_name='Дата выполнения задания',
-    )
-
-    def __str__(self):
-        return str(self.kpi_name)
-
-    class Meta:
-        verbose_name = 'KPI показатель'
-        verbose_name_plural = 'KPI показатели'
+# class UserRating(models.Model):
+#     user = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         on_delete=models.CASCADE,
+#         related_name='user_ratings')
+#     kpi_name = models.CharField(
+#         verbose_name='Название KPI',
+#         max_length=MAX_LENGTH_USERNAME
+#     )
+#     kpi_category = models.CharField(
+#         verbose_name='Категория KPI',
+#         max_length=MAX_LENGTH_USERNAME
+#     )
+#     target = models.IntegerField(
+#         verbose_name='Целовой показатель KPI',
+#     )
+#     actual = models.IntegerField(
+#         verbose_name='Актуальный показатель KPI',
+#     )
+#     date = models.DateField(
+#         verbose_name='Дата выполнения задания',
+#     )
+#
+#     def __str__(self):
+#         return str(self.kpi_name)
+#
+#     class Meta:
+#         verbose_name = 'KPI показатель'
+#         verbose_name_plural = 'KPI показатели'
 
 
 class CustomUserManager(BaseUserManager):
@@ -194,13 +192,9 @@ class User(AbstractUser):
         verbose_name='Опыт работы',
         default=1
     )
-    user_rating = models.ForeignKey(
-        UserRating,
-        verbose_name='Рейтинг работника',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='rating'
+    reward_points = models.PositiveIntegerField(
+        verbose_name='Баллы',
+        default=0
     )
     is_staff = models.BooleanField(
         verbose_name='Является ли пользователь персоналом',
