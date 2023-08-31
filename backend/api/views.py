@@ -3,12 +3,12 @@ from .serializers import CustomUserCreateSerializer, CustomUserRetrieveSerialize
 from rest_framework import viewsets, status
 from rest_framework import permissions
 from rest_framework.decorators import action
-from users.models import User
+from users.models import User, Hardskill, Achievement, UserHardskill, UserAchievement
 from tasks.models import Task
 from .permissions import CanEditUserFields, IsTaskCreator, CanViewAllTasks, \
-    CanCreateEditDeleteTasks, CanStartTask, CanCompleteTask, CanEditStatus
+    CanCreateEditDeleteTasks, CanStartTask, CanCompleteTask, CanEditStatus, IsTeamLeader
 
-from .serializers import TaskSerializer, TaskStatusUpdateSerializer
+from .serializers import TaskSerializer, TaskStatusUpdateSerializer, HardskillsSerializer, AchievementSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
@@ -74,6 +74,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
+    serializer_class = CustomUserRetrieveSerializer
 
     def get_permissions(self):
         if self.action == 'create':
@@ -89,3 +90,38 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             return [IsAdminUser()]
 
         return super().get_permissions()
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsTeamLeader])
+    def add_hardskills(self, request, pk=None):
+        user = self.get_object()
+        hardskills_data = request.data.get('hardskills', [])
+
+        for hardskill_data in hardskills_data:
+            hardskill, created = Hardskill.objects.get_or_create(name=hardskill_data['name'])
+            user.hardskills.add(hardskill)
+
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsTeamLeader])
+    def add_achievements(self, request, pk=None):
+        user = self.get_object()
+        achievements_data = request.data.get('achievements', [])
+
+        for achievement_data in achievements_data:
+            achievement, created = Achievement.objects.get_or_create(
+                name=achievement_data['name'],
+                defaults={'description': achievement_data.get('description', '')}
+            )
+            if 'image' in achievement_data:
+                achievement.image = achievement_data['image']
+            achievement.save()
+
+            UserAchievement.objects.update_or_create(
+                user=user,
+                achievement=achievement,
+                defaults={}
+            )
+
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

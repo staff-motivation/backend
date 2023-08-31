@@ -57,14 +57,12 @@ class Department(models.Model):
 
 
 class Hardskill(models.Model):
-    """
-    Модель профессиональных навыков / хард скиллов пользователей.
-    """
     name = models.CharField(
         verbose_name='Хардскилл',
         help_text='Введите профессиоанльный навык/хардскилл',
         max_length=MAX_LENGTH_USERNAME,
-        blank=False
+        blank=False,
+        unique=True
     )
 
     class Meta:
