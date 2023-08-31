@@ -44,6 +44,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
                   'position',
                   'hardskills_read_only',
                   'achievements_read_only',
+                  'reward_points')
                   'reward_points ')
 
     def update(self, instance, validated_data):
