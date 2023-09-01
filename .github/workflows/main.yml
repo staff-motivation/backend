@@ -35,7 +35,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             # Создание файла docker-compose.yaml
-            cat <<EOF > /root/dev/docker-compose.yaml
+            cat <<EOF > /root/dev/docker-compose.yml
             version: '3.8'
             services:
               db:
@@ -80,8 +80,8 @@ jobs:
   
             # Другие команды развертывания
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/motivation_system
-            sudo docker-compose -f /root/dev/docker-compose.yaml up -d
-            sudo docker-compose -f /root/dev/docker-compose.yaml exec -T web python manage.py collectstatic --no-input
-            sudo docker-compose -f /root/dev/docker-compose.yaml exec -T web python manage.py makemigrations
-            sudo docker-compose -f /root/dev/docker-compose.yaml exec -T web python manage.py migrate
+            sudo docker-compose -f /root/dev/docker-compose.yml up -d
+            sudo docker-compose -f /root/dev/docker-compose.yml exec -T web python manage.py collectstatic --no-input
+            sudo docker-compose -f /root/dev/docker-compose.yml exec -T web python manage.py makemigrations
+            sudo docker-compose -f /root/dev/docker-compose.yml exec -T web python manage.py migrate
   
