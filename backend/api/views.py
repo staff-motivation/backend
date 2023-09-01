@@ -93,13 +93,18 @@ class TaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
         review_status = request.data.get('status', '')
 
+        if task.status == 'Принята и выполнена':
+            return Response({"error": "Задача уже была принята и выполнена"}, status=status.HTTP_400_BAD_REQUEST)
+
         if review_status == 'approve':
             with transaction.atomic():
                 task.status = 'Принята и выполнена'
                 task.save()
                 TaskUpdate.objects.create(task=task, user=user, status='completed')
-                user.reward_points += task.reward_points
-                user.save()
+                for assigned_user in task.assigned_to.all():
+                    assigned_user.reward_points += task.reward_points
+                    assigned_user.save()
+
             return Response({"message": "Принята и выполнена"}, status=status.HTTP_200_OK)
         elif review_status == 'reject':
             task.status = 'Возвращена на доработку'
