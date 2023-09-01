@@ -34,52 +34,12 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            # Создание файла docker-compose.yaml
-            cat <<EOF > /root/dev/docker-compose.yml
-            version: '3.8'
-            services:
-              db:
-                image: postgres:13.0-alpine
-                volumes:
-                  - /var/lib/postgresql/data/
-                env_file:
-                  - /root/dev/.env
-              web:
-                image: ${{ secrets.DOCKER_USERNAME }}/motivation_system
-                restart: always
-                volumes:
-                  - static_value:/app/static/
-                  - media_value:/app/media/
-                depends_on:
-                  - db
-                env_file:
-                  - /root/dev/.env
-            volumes:
-              static_value:
-              media_value:
-              postgres_data:
-            EOF
-  
-            # Создание файла конфигурации Nginx
-            cat <<EOF > /root/dev/nginx.conf
-            server {
-                listen 80;
-                server_name 185.41.163.109;
-  
-                location /static/ {
-                    alias /var/html/static/;
-                }
-                location /media/ {
-                    alias /var/html/media/;
-                }
-                location / {
-                    proxy_pass http://web:8000;
-                }
-            }
-            EOF
-  
-            # Другие команды развертывания
+            sudo docker-compose stop
+            sudo docker-compose rm web
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/motivation_system
+            sudo docker-compose up -d
+            
+            # Другие команды развертывания
             sudo docker-compose -f /root/dev/docker-compose.yml up -d
             sudo docker-compose -f /root/dev/docker-compose.yml exec -T web python manage.py collectstatic --no-input
             sudo docker-compose -f /root/dev/docker-compose.yml exec -T web python manage.py makemigrations
