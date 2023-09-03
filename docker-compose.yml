@@ -18,7 +18,7 @@ services:
     # env_file:
     #   - ./.env
   frontend:
-    image: nekipelovdv/front:latest
+    image: annakharatova/frontend-motivation:latest
     volumes:
       - ./frontend/:/app/result_build/
     depends_on:
