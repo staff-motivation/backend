@@ -80,7 +80,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
     class Meta(UserCreateSerializer.Meta):
         fields = UserCreateSerializer.Meta.fields + (
-            'password_confirmation', 'birthday'
+            'password_confirmation',
         )
 
     def validate(self, data):
@@ -92,7 +92,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
         required_fields = [
             "email", "password", "password_confirmation",
-            "first_name", "last_name", "birthday"
+            "first_name", "last_name"
         ]
         if any(field not in data for field in required_fields):
             raise serializers.ValidationError("Не все обязательные поля заполнены.")

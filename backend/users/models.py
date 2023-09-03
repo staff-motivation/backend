@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.conf import settings
-from django.db import models
+from django.db import models, IntegrityError
 from django.db.models import UniqueConstraint
 
 from backend.settings import MAX_LENGTH_USERNAME, MAX_LENGTH_EMAIL
@@ -116,9 +116,12 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        user.save()
-        return user
+        try:
+            user.save()
+        except IntegrityError as e:
+            raise ValueError(f'Ошибка при создании пользователя: {str(e)}')
 
+        return user
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -168,7 +171,8 @@ class User(AbstractUser):
     birthday = models.DateField(
         verbose_name='Дата рождения',
         help_text='Введите вашу дату рождения',
-        blank=True
+        blank=True,
+        null=True
     )
     password = models.CharField(
         verbose_name='Пароль',
@@ -218,14 +222,13 @@ class User(AbstractUser):
     REQUIRED_FIELDS = (
         'first_name',
         'last_name',
-        'birthday',
-        'password',
+        'password'
     )
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('birthday',)
+        ordering = ('email',)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
