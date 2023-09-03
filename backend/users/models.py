@@ -168,7 +168,7 @@ class User(AbstractUser):
     birthday = models.DateField(
         verbose_name='Дата рождения',
         help_text='Введите вашу дату рождения',
-        blank=False
+        blank=True
     )
     password = models.CharField(
         verbose_name='Пароль',

@@ -21,8 +21,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(detail=False, methods=['POST'])
-    def create_task(self, request):
+    def create(self, request):
         serializer = TaskSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             task = serializer.save()
