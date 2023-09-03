@@ -5,7 +5,6 @@ from users.models import (
 )
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, permissions
-from users.models import User
 from tasks.models import Task, TaskUpdate, TaskInvitation
 from .permissions import CanEditUserFields
 from rest_framework.exceptions import PermissionDenied
@@ -13,6 +12,7 @@ from rest_framework.exceptions import PermissionDenied
 
 class AchievementSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
+
     class Meta:
         model = Achievement
         fields = ('name', 'image', 'description')
