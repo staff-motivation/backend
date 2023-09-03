@@ -36,6 +36,7 @@ jobs:
           script: |
             sudo docker-compose stop
             sudo docker-compose rm web
+            sudo docker pull nekipelovdv/front
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/motivation_system
             sudo docker-compose up -d
             
