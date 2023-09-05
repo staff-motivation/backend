@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer
 from rest_framework import viewsets, status
@@ -128,7 +129,8 @@ class TaskViewSet(viewsets.ModelViewSet):
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserRetrieveSerializer
-
+    # filter_backends = (DjangoFilterBackend,)
+    # filterset_fields = ('role', 'position')
     def get_permissions(self):
         if self.action == 'create':
             return [permissions.AllowAny()]
