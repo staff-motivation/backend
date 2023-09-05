@@ -119,3 +119,24 @@ class TaskInvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskInvitation
         fields = '__all__'
+
+
+class ShortUserProfileSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'first_name',
+            'last_name',
+            'image',
+            'reward_points',
+            'rating',
+            'department'
+        )
+
+    def get_rating(self, obj):
+        users = User.objects.filter(is_active=True).order_by('-reward_points', 'email')
+        user_ids = [user.id for user in users]
+        rating = user_ids.index(obj.id) + 1
+        return rating

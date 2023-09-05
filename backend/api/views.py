@@ -1,15 +1,14 @@
-from djoser.views import UserViewSet
-from .serializers import CustomUserCreateSerializer, CustomUserRetrieveSerializer
+from django.db.models import Q
+
+from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer
 from rest_framework import viewsets, status
 from rest_framework import permissions
 from rest_framework.decorators import action
-from users.models import User, Hardskill, Achievement, UserHardskill, UserAchievement
-from tasks.models import Task, TaskUpdate, TaskInvitation, STATUS_CHOICES
+from users.models import User, Hardskill, Achievement, UserAchievement
+from tasks.models import Task, TaskUpdate, TaskInvitation
+from .permissions import CanEditUserFields, IsTeamLeader
 
-from .permissions import CanEditUserFields, IsTaskCreator, CanViewAllTasks, \
-    CanCreateEditDeleteTasks, CanStartTask, CanCompleteTask, CanEditStatus, IsTeamLeader
-
-from .serializers import TaskSerializer, TaskUpdateSerializer, TaskInvitationSerializer, HardskillsSerializer, AchievementSerializer
+from .serializers import TaskSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -179,3 +178,11 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ShortUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ShortUserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)

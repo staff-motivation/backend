@@ -73,37 +73,6 @@ class Hardskill(models.Model):
             return self.name
 
 
-# class UserRating(models.Model):
-#     user = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name='user_ratings')
-#     kpi_name = models.CharField(
-#         verbose_name='Название KPI',
-#         max_length=MAX_LENGTH_USERNAME
-#     )
-#     kpi_category = models.CharField(
-#         verbose_name='Категория KPI',
-#         max_length=MAX_LENGTH_USERNAME
-#     )
-#     target = models.IntegerField(
-#         verbose_name='Целовой показатель KPI',
-#     )
-#     actual = models.IntegerField(
-#         verbose_name='Актуальный показатель KPI',
-#     )
-#     date = models.DateField(
-#         verbose_name='Дата выполнения задания',
-#     )
-#
-#     def __str__(self):
-#         return str(self.kpi_name)
-#
-#     class Meta:
-#         verbose_name = 'KPI показатель'
-#         verbose_name_plural = 'KPI показатели'
-
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
@@ -228,7 +197,7 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('email',)
+        ordering = ('-reward_points', 'email')
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
