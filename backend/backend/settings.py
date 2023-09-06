@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework.documentation',
     'djoser',
-    'drf_yasg',
+    'drf_spectacular',
     'import_export',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
@@ -35,6 +35,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 STATIC_URL = '/static/'
