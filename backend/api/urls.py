@@ -4,8 +4,7 @@ from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
 )
-from .views import CustomUserViewSet, TaskViewSet
-
+from .views import CustomUserViewSet, TaskViewSet, ShortUserProfileViewSet
 
 router = DefaultRouter()
 router.register(r'users', CustomUserViewSet, basename='user')
