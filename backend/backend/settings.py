@@ -162,14 +162,14 @@ AUTH_USER_MODEL = 'users.User'
 
 settings.DATE_FORMAT = 'd.m.Y'
 ru_formats.DATE_FORMAT = 'd.m.Y'
-
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'My API Documentation',
-    'DESCRIPTION': 'Documentation for my Django API built with DRF',
-    'VERSION': '1.0.0',
-    'SCHEMA_PATH_PREFIX': '/api',
-}
-
+#
+# SPECTACULAR_SETTINGS = {
+#     'TITLE': 'My API Documentation',
+#     'DESCRIPTION': 'Documentation for my Django API built with DRF',
+#     'VERSION': '1.0.0',
+#     'SCHEMA_PATH_PREFIX': '/api',
+# }
+#
 
 # Вариант рассылки для отладки кода
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
