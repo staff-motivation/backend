@@ -5,7 +5,6 @@ from users.models import (
 )
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, permissions
-from users.models import User
 from tasks.models import Task, TaskUpdate, TaskInvitation
 from .permissions import CanEditUserFields
 from rest_framework.exceptions import PermissionDenied
@@ -13,6 +12,7 @@ from rest_framework.exceptions import PermissionDenied
 
 class AchievementSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
+
     class Meta:
         model = Achievement
         fields = ('name', 'image', 'description')
@@ -80,7 +80,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
     class Meta(UserCreateSerializer.Meta):
         fields = UserCreateSerializer.Meta.fields + (
-            'password_confirmation', 'birthday'
+            'password_confirmation',
         )
 
     def validate(self, data):
@@ -92,7 +92,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
         required_fields = [
             "email", "password", "password_confirmation",
-            "first_name", "last_name", "birthday"
+            "first_name", "last_name"
         ]
         if any(field not in data for field in required_fields):
             raise serializers.ValidationError("Не все обязательные поля заполнены.")
@@ -119,3 +119,24 @@ class TaskInvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskInvitation
         fields = '__all__'
+
+
+class ShortUserProfileSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'first_name',
+            'last_name',
+            'image',
+            'reward_points',
+            'rating',
+            'department'
+        )
+
+    def get_rating(self, obj):
+        users = User.objects.filter(is_active=True).order_by('-reward_points', 'email')
+        user_ids = [user.id for user in users]
+        rating = user_ids.index(obj.id) + 1
+        return rating

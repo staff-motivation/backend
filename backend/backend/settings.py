@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework.documentation',
+    'django_filters',
     'djoser',
     'drf_spectacular',
     'import_export',
@@ -54,11 +55,14 @@ DJOSER = {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
         'user': 'api.serializers.CustomUserRetrieveSerializer',
         'current_user': 'api.serializers.CustomUserRetrieveSerializer',
+        'profile_info': 'api.serializers.UserPublicSerializer',
+
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.IsAuthenticated'],
         'user': ['api.permissions.CanEditUserFields'],
         'user_delete': ['rest_framework.permissions.IsAdminUser'],
+        'profile_info': ['rest_framework.permissions.IsAuthenticated'],
     },
     'EMAIL_BACKEND': 'django.core.mail.backends.console.EmailBackend',
     'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails')

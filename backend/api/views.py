@@ -1,15 +1,15 @@
-from djoser.views import UserViewSet
-from .serializers import CustomUserCreateSerializer, CustomUserRetrieveSerializer
+from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer
 from rest_framework import viewsets, status
 from rest_framework import permissions
 from rest_framework.decorators import action
-from users.models import User, Hardskill, Achievement, UserHardskill, UserAchievement
-from tasks.models import Task, TaskUpdate, TaskInvitation, STATUS_CHOICES
+from users.models import User, Hardskill, Achievement, UserAchievement
+from tasks.models import Task, TaskUpdate, TaskInvitation
+from .permissions import CanEditUserFields, IsTeamLeader
 
-from .permissions import CanEditUserFields, IsTaskCreator, CanViewAllTasks, \
-    CanCreateEditDeleteTasks, CanStartTask, CanCompleteTask, CanEditStatus, IsTeamLeader
-
-from .serializers import TaskSerializer, TaskUpdateSerializer, TaskInvitationSerializer, HardskillsSerializer, AchievementSerializer
+from .serializers import TaskSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -21,8 +21,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(detail=False, methods=['POST'])
-    def create_task(self, request):
+    def create(self, request):
         serializer = TaskSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             task = serializer.save()
@@ -93,13 +92,18 @@ class TaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
         review_status = request.data.get('status', '')
 
+        if task.status == 'Принята и выполнена':
+            return Response({"error": "Задача уже была принята и выполнена"}, status=status.HTTP_400_BAD_REQUEST)
+
         if review_status == 'approve':
             with transaction.atomic():
                 task.status = 'Принята и выполнена'
                 task.save()
                 TaskUpdate.objects.create(task=task, user=user, status='completed')
-                user.reward_points += task.reward_points
-                user.save()
+                for assigned_user in task.assigned_to.all():
+                    assigned_user.reward_points += task.reward_points
+                    assigned_user.save()
+
             return Response({"message": "Принята и выполнена"}, status=status.HTTP_200_OK)
         elif review_status == 'reject':
             task.status = 'Возвращена на доработку'
@@ -125,7 +129,8 @@ class TaskViewSet(viewsets.ModelViewSet):
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserRetrieveSerializer
-
+    # filter_backends = (DjangoFilterBackend,)
+    # filterset_fields = ('role', 'position')
     def get_permissions(self):
         if self.action == 'create':
             return [permissions.AllowAny()]
@@ -175,3 +180,11 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ShortUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ShortUserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)

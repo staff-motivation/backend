@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.conf import settings
-from django.db import models
+from rest_framework import serializers
+from django.db import models, IntegrityError
 from django.db.models import UniqueConstraint
 
 from backend.settings import MAX_LENGTH_USERNAME, MAX_LENGTH_EMAIL
@@ -73,37 +73,6 @@ class Hardskill(models.Model):
             return self.name
 
 
-# class UserRating(models.Model):
-#     user = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name='user_ratings')
-#     kpi_name = models.CharField(
-#         verbose_name='Название KPI',
-#         max_length=MAX_LENGTH_USERNAME
-#     )
-#     kpi_category = models.CharField(
-#         verbose_name='Категория KPI',
-#         max_length=MAX_LENGTH_USERNAME
-#     )
-#     target = models.IntegerField(
-#         verbose_name='Целовой показатель KPI',
-#     )
-#     actual = models.IntegerField(
-#         verbose_name='Актуальный показатель KPI',
-#     )
-#     date = models.DateField(
-#         verbose_name='Дата выполнения задания',
-#     )
-#
-#     def __str__(self):
-#         return str(self.kpi_name)
-#
-#     class Meta:
-#         verbose_name = 'KPI показатель'
-#         verbose_name_plural = 'KPI показатели'
-
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
@@ -111,12 +80,16 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_active', True)
 
         if not email:
-            raise ValueError('Поле email обязательно к заполнению')
+            raise serializers.ValidationError('Поле email обязательно к заполнению')
 
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        user.save()
+        try:
+            user.save()
+        except IntegrityError as e:
+            raise ValueError(f'Ошибка при создании пользователя: {str(e)}')
+
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
@@ -168,7 +141,8 @@ class User(AbstractUser):
     birthday = models.DateField(
         verbose_name='Дата рождения',
         help_text='Введите вашу дату рождения',
-        blank=False
+        blank=True,
+        null=True
     )
     password = models.CharField(
         verbose_name='Пароль',
@@ -218,14 +192,13 @@ class User(AbstractUser):
     REQUIRED_FIELDS = (
         'first_name',
         'last_name',
-        'birthday',
-        'password',
+        'password'
     )
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('birthday',)
+        ordering = ('-reward_points', 'email')
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
