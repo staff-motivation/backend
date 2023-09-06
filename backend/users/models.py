@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.conf import settings
+from rest_framework import serializers
 from django.db import models, IntegrityError
 from django.db.models import UniqueConstraint
 
@@ -80,7 +80,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_active', True)
 
         if not email:
-            raise ValueError('Поле email обязательно к заполнению')
+            raise serializers.ValidationError('Поле email обязательно к заполнению')
 
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
@@ -91,6 +91,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(f'Ошибка при создании пользователя: {str(e)}')
 
         return user
+
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
