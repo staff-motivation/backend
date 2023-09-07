@@ -18,7 +18,7 @@ urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
     path('auth/', include(router.urls)),
     path('auth/curent_user_info/', ShortUserProfileViewSet.as_view({'get': 'list'}), name='user_profile_info'),
-    path('auth/users/<int:user_id>/notifications/', UserNotificationsViewSet.as_view({'get': 'list'}), name='user-notifications'),
+    path('auth/users/my_notifications/', UserNotificationsViewSet.as_view({'get': 'list'}), name='user-notifications'),
     path('auth/tasks/accept_task/<int:pk>/', TaskViewSet.as_view({'post': 'accept_task'}), name='accept_task'),
     path('auth/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('auth/swagger/', SpectacularSwaggerView.as_view(url_name='api:schema'), name='swagger'),
