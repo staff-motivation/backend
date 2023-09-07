@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.conf import settings
+from rest_framework import serializers
 from django.db import models, IntegrityError
 from django.db.models import UniqueConstraint
 
@@ -73,35 +73,13 @@ class Hardskill(models.Model):
             return self.name
 
 
-# class UserRating(models.Model):
-#     user = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name='user_ratings')
-#     kpi_name = models.CharField(
-#         verbose_name='Название KPI',
-#         max_length=MAX_LENGTH_USERNAME
-#     )
-#     kpi_category = models.CharField(
-#         verbose_name='Категория KPI',
-#         max_length=MAX_LENGTH_USERNAME
-#     )
-#     target = models.IntegerField(
-#         verbose_name='Целовой показатель KPI',
-#     )
-#     actual = models.IntegerField(
-#         verbose_name='Актуальный показатель KPI',
-#     )
-#     date = models.DateField(
-#         verbose_name='Дата выполнения задания',
-#     )
-#
-#     def __str__(self):
-#         return str(self.kpi_name)
-#
-#     class Meta:
-#         verbose_name = 'KPI показатель'
-#         verbose_name_plural = 'KPI показатели'
+class Contact(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='Contact')
+    contact_type = models.CharField(max_length=50)
+    link = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.user.first_name} - {self.contact_type}: {self.link}"
 
 
 class CustomUserManager(BaseUserManager):
@@ -111,7 +89,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_active', True)
 
         if not email:
-            raise ValueError('Поле email обязательно к заполнению')
+            raise serializers.ValidationError('Поле email обязательно к заполнению')
 
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
@@ -122,6 +100,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(f'Ошибка при создании пользователя: {str(e)}')
 
         return user
+
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -216,6 +195,12 @@ class User(AbstractUser):
         'Achievement',
         through='UserAchievement'
     )
+    contacts = models.ManyToManyField(
+        Contact,
+        through="UserContact",
+        blank=True,
+        related_name='user_contacts'
+    )
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -228,7 +213,7 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('email',)
+        ordering = ('-reward_points', 'email')
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -264,13 +249,12 @@ class User(AbstractUser):
         return self.role == role
 
 
-class Contact(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='Contact')
-    platform = models.CharField(max_length=50)
-    link = models.URLField()
+class UserContact(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_contacts')
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user.first_name} - {self.platform}"
+        return f"{self.user.first_name} - {self.contact.platform}"
 
 
 class UserHardskill(models.Model):

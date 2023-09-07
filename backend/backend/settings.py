@@ -22,8 +22,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework.documentation',
+    'django_filters',
     'djoser',
-    'drf_yasg',
+    'drf_spectacular',
     'import_export',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
@@ -35,6 +36,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 STATIC_URL = '/static/'
@@ -53,11 +55,14 @@ DJOSER = {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
         'user': 'api.serializers.CustomUserRetrieveSerializer',
         'current_user': 'api.serializers.CustomUserRetrieveSerializer',
+        'profile_info': 'api.serializers.UserPublicSerializer',
+
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.IsAuthenticated'],
         'user': ['api.permissions.CanEditUserFields'],
         'user_delete': ['rest_framework.permissions.IsAdminUser'],
+        'profile_info': ['rest_framework.permissions.IsAuthenticated'],
     },
     'EMAIL_BACKEND': 'django.core.mail.backends.console.EmailBackend',
     'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails')
@@ -157,6 +162,14 @@ AUTH_USER_MODEL = 'users.User'
 
 settings.DATE_FORMAT = 'd.m.Y'
 ru_formats.DATE_FORMAT = 'd.m.Y'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'My API Documentation',
+    'DESCRIPTION': 'Documentation for my Django API built with DRF',
+    'VERSION': '1.0.0',
+    # 'SCHEMA_PATH_PREFIX': '/api',
+}
+
 
 # Вариант рассылки для отладки кода
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

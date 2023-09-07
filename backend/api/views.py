@@ -1,16 +1,17 @@
 import datetime
 from djoser.views import UserViewSet
 from .serializers import CustomUserCreateSerializer, CustomUserRetrieveSerializer
+
+from django.db.models import Q
+from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer
 from rest_framework import viewsets, status
 from rest_framework import permissions, filters
 from rest_framework.decorators import action
-from users.models import User, Hardskill, Achievement, UserHardskill, UserAchievement
-from tasks.models import Task, TaskUpdate, TaskInvitation, STATUS_CHOICES
+from users.models import User, Hardskill, Achievement, UserAchievement
+from tasks.models import Task, TaskUpdate, TaskInvitation
+from .permissions import CanEditUserFields, IsTeamLeader
 
-from .permissions import CanEditUserFields, IsTaskCreator, CanViewAllTasks, \
-    CanCreateEditDeleteTasks, CanStartTask, CanCompleteTask, CanEditStatus, IsTeamLeader
-
-from .serializers import TaskSerializer, TaskUpdateSerializer, TaskInvitationSerializer, HardskillsSerializer, AchievementSerializer
+from .serializers import TaskSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -53,28 +54,17 @@ class TaskViewSet(viewsets.ModelViewSet):
         else:
             return Response({'error': 'Неавторизованный пользователь'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # @action(detail=True, methods=['POST'])
-    # def invite_users(self, request, pk=None):
-    #     task = self.get_object()
-    #     invited_user_ids = request.data.get('assigned_to', [])
-    #
-    #     for user_id in invited_user_ids:
-    #         user = User.objects.get(id=user_id)
-    #         TaskInvitation.objects.create(task=task, user=user)
-    #
-    #     return Response({"message": "Users invited successfully"}, status=status.HTTP_200_OK)
-    #
-    # @action(detail=True, methods=['POST'])
-    # def accept_task(self, request, pk=None):
-    #     task = self.get_object()
-    #     user = request.user
-    #
-    #     if user not in task.assigned_to.all():
-    #         return Response({'error': 'You are not invited to this task'}, status=status.HTTP_400_BAD_REQUEST)
-    #
-    #     task.status = 'in_progress'
-    #     task.save()
-    #     return Response({'status': 'Task accepted and status changed to "in_progress"'})
+    @action(detail=True, methods=['POST'])
+    def accept_task(self, request, pk=None):
+        task = self.get_object()
+        user = request.user
+
+        if user not in task.assigned_to.all():
+            return Response({'error': 'Это не ваша задача'}, status=status.HTTP_400_BAD_REQUEST)
+
+        task.status = 'in_progress'
+        task.save()
+        return Response({'status': 'Сотрудник принял задачу, ее статус изменен на "in_progress"'})
 
     @action(detail=True, methods=['POST'])
     def invite_users(self, request, pk=None):
@@ -157,7 +147,8 @@ class TaskViewSet(viewsets.ModelViewSet):
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserRetrieveSerializer
-
+    # filter_backends = (DjangoFilterBackend,)
+    # filterset_fields = ('role', 'position')
     def get_permissions(self):
         if self.action == 'create':
             return [permissions.AllowAny()]
@@ -172,6 +163,13 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             return [IsAdminUser()]
 
         return super().get_permissions()
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.request.user
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['patch'], permission_classes=[IsTeamLeader])
     def add_hardskills(self, request, pk=None):
@@ -207,3 +205,11 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ShortUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ShortUserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)

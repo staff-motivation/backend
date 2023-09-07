@@ -1,13 +1,13 @@
-from users.models import (
-    User, CustomUserManager,
-    Hardskill, UserHardskill,
-    Achievement, UserAchievement
-)
+from users.models import User, Hardskill, Achievement, Contact
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from rest_framework import serializers, permissions
+from rest_framework import serializers
 from tasks.models import Task, TaskUpdate, TaskInvitation
-from .permissions import CanEditUserFields
-from rest_framework.exceptions import PermissionDenied
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ('contact_type', 'link')
 
 
 class AchievementSerializer(serializers.ModelSerializer):
@@ -31,6 +31,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
     hardskills_read_only = serializers.BooleanField(read_only=True, default=False)
     achievements_read_only = serializers.BooleanField(read_only=True, default=False)
     reward_points = serializers.IntegerField(read_only=True)
+    contacts = ContactSerializer(many=True, required=False)
 
     class Meta:
         model = User
@@ -44,13 +45,18 @@ class CustomUserRetrieveSerializer(UserSerializer):
                   'position',
                   'hardskills_read_only',
                   'achievements_read_only',
-                  'reward_points')
+                  'reward_points',
+                  'contacts')
 
     def update(self, instance, validated_data):
         hardskills_data = validated_data.pop('hardskills', [])
         achievements_data = validated_data.pop('achievements', [])
+        contacts_data = validated_data.pop('contacts', [])
 
-        if self.context['request'].user.is_teamleader:
+        is_teamleader = self.context['request'].user.is_teamleader
+        is_user_self = instance == self.context['request'].user
+
+        if is_teamleader:
             instance.hardskills.clear()
             instance.achievements.clear()
 
@@ -65,10 +71,18 @@ class CustomUserRetrieveSerializer(UserSerializer):
                     defaults={'description': achievement_data.get('description', '')}
                 )
                 instance.achievements.add(achievement)
-        else:
-            validated_data['hardskills_read_only'] = instance.hardskills.all()
-            validated_data['achievements_read_only'] = instance.achievements.all()
 
+        if is_user_self:
+            for contact_data in contacts_data:
+                contact_type = contact_data.get('contact_type')
+                link = contact_data.get('link')
+                if contact_type and link:
+
+                    contact, created = Contact.objects.update_or_create(
+                        user=instance,
+                        contact_type=contact_type,
+                        defaults={'link': link}
+                    )
         instance = super().update(instance, validated_data)
         return instance
 
@@ -119,3 +133,24 @@ class TaskInvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskInvitation
         fields = '__all__'
+
+
+class ShortUserProfileSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'first_name',
+            'last_name',
+            'image',
+            'reward_points',
+            'rating',
+            'department'
+        )
+
+    def get_rating(self, obj):
+        users = User.objects.filter(is_active=True).order_by('-reward_points', 'email')
+        user_ids = [user.id for user in users]
+        rating = user_ids.index(obj.id) + 1
+        return rating
