@@ -1,7 +1,8 @@
+import datetime
 from djoser.views import UserViewSet
 from .serializers import CustomUserCreateSerializer, CustomUserRetrieveSerializer
 from rest_framework import viewsets, status
-from rest_framework import permissions
+from rest_framework import permissions, filters
 from rest_framework.decorators import action
 from users.models import User, Hardskill, Achievement, UserHardskill, UserAchievement
 from tasks.models import Task, TaskUpdate, TaskInvitation, STATUS_CHOICES
@@ -124,6 +125,33 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         task.assigned_to.add(user)
         return Response({"message": "Сотрудник приступил к задаче"}, status=status.HTTP_200_OK)
+
+
+    def get_queryset(self):
+        """
+        Фильтрация задач по статусу и просроченным дедлайнам.
+        Пример запроса с фильтрацией - Новые задачи:
+        http://example.com/api/tasks/?status=created
+
+        Пример запроса с фильтрацией - В работе:
+        http://example.com/api/tasks/?status=in_progress
+
+        Пример запроса с фильтрацией - На подтверждении:
+        http://example.com/api/tasks/?status=sent_for_review
+
+        Пример запроса с фильтрацией - Просроченные:
+        http://example.com/api/tasks/?is_overdue=true
+        """
+        queryset = super().get_queryset()
+        status = self.request.query_params.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+        
+        is_overdue = self.request.query_params.get('is_overdue')
+        if is_overdue:
+            queryset = queryset.filter(deadline__lt=datetime.date.today())
+        
+        return queryset
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
