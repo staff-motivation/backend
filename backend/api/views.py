@@ -118,6 +118,28 @@ class TaskViewSet(viewsets.ModelViewSet):
         return Response({"message": "Сотрудники добавлены в задачу"}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['POST'])
+    def send_for_review(self, request, pk=None):
+        task = self.get_object()
+        user = request.user
+        if user in task.assigned_to.all():
+            if task.status == 'in_progress':
+                task.status = 'sent_for_review'
+
+                for participant in task.assigned_to.all():
+                    Notification.objects.create(
+                        user=participant,
+                        message=f'Задача "{task.title}" отправлена на проверку и ожидает вашей проверки'
+                    )
+
+                return Response({'status': 'Задача отправлена на проверку'})
+            else:
+                return Response({'error': 'Задачу можно отправить на проверку только со статусом "in_progress"'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'Это не ваша задача или у вас нет прав отправить ее на проверку'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['POST'])
     def review_task(self, request, pk=None):
         task = self.get_object()
         user = self.request.user
