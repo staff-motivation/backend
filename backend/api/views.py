@@ -72,26 +72,32 @@ class TaskViewSet(viewsets.ModelViewSet):
         task = self.get_object()
         user = request.user
 
-        if user in task.assigned_to.all():
-            task.status = 'in_progress'
-            task.save()
-            Notification.objects.create(
-                user=user,
-                message=f'Задача "{task.title}" принята, статус изменен на "in_progress"'
-            )
+        invitation = get_object_or_404(TaskInvitation, task=task, user=user, accepted=False)
 
-            Notification.objects.create(
-                user=task.team_leader,
-                message=f'Задача "{task.title}" была принята сотрудником {user.first_name}'
-            )
-
-            invitation = get_object_or_404(TaskInvitation, task=task, user=user, accepted=False)
+        if invitation:
             invitation.accepted = True
             invitation.save()
 
-            task.assigned_to.add(user)
+            accepted_invitations = task.taskinvitation_set.filter(accepted=True)
 
-            return Response({'status': 'Сотрудник принял задачу, ее статус изменен на "in_progress"'})
+            if accepted_invitations.count() == task.assigned_to.count():
+                task.status = 'in_progress'
+                task.save()
+
+                for accepted_invitation in accepted_invitations:
+                    Notification.objects.create(
+                        user=accepted_invitation.user,
+                        message=f'Задача "{task.title}" принята, статус изменен на "in_progress"'
+                    )
+
+                Notification.objects.create(
+                    user=task.team_leader,
+                    message=f'Задача "{task.title}" была принята всеми сотрудниками'
+                )
+
+                return Response({'status': 'Все сотрудники приняли задачу, ее статус изменен на "in_progress"'})
+            else:
+                return Response({'status': 'Сотрудник принял задачу'})
         else:
             return Response({'error': 'Это не ваша задача'}, status=status.HTTP_400_BAD_REQUEST)
 
