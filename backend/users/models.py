@@ -73,6 +73,15 @@ class Hardskill(models.Model):
             return self.name
 
 
+class Contact(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='Contact')
+    contact_type = models.CharField(max_length=50)
+    link = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.user.first_name} - {self.contact_type}: {self.link}"
+
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
@@ -186,6 +195,12 @@ class User(AbstractUser):
         'Achievement',
         through='UserAchievement'
     )
+    contacts = models.ManyToManyField(
+        Contact,
+        through="UserContact",
+        blank=True,
+        related_name='user_contacts'
+    )
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -234,13 +249,12 @@ class User(AbstractUser):
         return self.role == role
 
 
-class Contact(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='Contact')
-    platform = models.CharField(max_length=50)
-    link = models.URLField()
+class UserContact(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_contacts')
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user.first_name} - {self.platform}"
+        return f"{self.user.first_name} - {self.contact.platform}"
 
 
 class UserHardskill(models.Model):

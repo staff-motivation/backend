@@ -1,6 +1,4 @@
 from django.db.models import Q
-from django_filters.rest_framework import DjangoFilterBackend
-
 from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer
 from rest_framework import viewsets, status
 from rest_framework import permissions
@@ -145,6 +143,13 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             return [IsAdminUser()]
 
         return super().get_permissions()
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.request.user
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['patch'], permission_classes=[IsTeamLeader])
     def add_hardskills(self, request, pk=None):

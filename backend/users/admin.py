@@ -2,16 +2,15 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext as _
-from django.http import HttpResponse
-from django.urls import reverse
-from import_export import resources
-from django import forms
 from django.utils.safestring import mark_safe
 from tasks.models import Task
 
-from .models import (
-    Achievement, Department, Hardskill, User
-)
+from .models import Achievement, Contact, Hardskill, User
+
+
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ('user', 'contact_type', 'link')
+
 
 class TaskAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'team_leader', 'deadline', 'status']
@@ -103,5 +102,5 @@ admin.site.register(Task, TaskAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Hardskill, HardskillAdmin)
 admin.site.register(Achievement, AchievementAdmin)
-
+admin.site.register(Contact, ContactAdmin)
 
