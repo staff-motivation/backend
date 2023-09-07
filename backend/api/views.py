@@ -50,28 +50,17 @@ class TaskViewSet(viewsets.ModelViewSet):
         else:
             return Response({'error': 'Неавторизованный пользователь'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # @action(detail=True, methods=['POST'])
-    # def invite_users(self, request, pk=None):
-    #     task = self.get_object()
-    #     invited_user_ids = request.data.get('assigned_to', [])
-    #
-    #     for user_id in invited_user_ids:
-    #         user = User.objects.get(id=user_id)
-    #         TaskInvitation.objects.create(task=task, user=user)
-    #
-    #     return Response({"message": "Users invited successfully"}, status=status.HTTP_200_OK)
-    #
-    # @action(detail=True, methods=['POST'])
-    # def accept_task(self, request, pk=None):
-    #     task = self.get_object()
-    #     user = request.user
-    #
-    #     if user not in task.assigned_to.all():
-    #         return Response({'error': 'You are not invited to this task'}, status=status.HTTP_400_BAD_REQUEST)
-    #
-    #     task.status = 'in_progress'
-    #     task.save()
-    #     return Response({'status': 'Task accepted and status changed to "in_progress"'})
+    @action(detail=True, methods=['POST'])
+    def accept_task(self, request, pk=None):
+        task = self.get_object()
+        user = request.user
+
+        if user not in task.assigned_to.all():
+            return Response({'error': 'Это не ваша задача'}, status=status.HTTP_400_BAD_REQUEST)
+
+        task.status = 'in_progress'
+        task.save()
+        return Response({'status': 'Сотрудник принял задачу, ее статус изменен на "in_progress"'})
 
     @action(detail=True, methods=['POST'])
     def invite_users(self, request, pk=None):
