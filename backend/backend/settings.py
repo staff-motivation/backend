@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'news.apps.NewsConfig',
     'tasks.apps.TasksConfig',
+    'notifications.apps.NotificationsConfig',
 ]
 
 REST_FRAMEWORK = {

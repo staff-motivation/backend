@@ -1,6 +1,4 @@
 from django.db import models
-from django.utils import timezone
-from django.conf import settings
 from users.models import User
 
 
@@ -43,4 +41,4 @@ class TaskInvitation(models.Model):
     accepted = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Invitation for {self.user.username} to task {self.task.title}"
+        return f"Invitation for {self.user.first_name} to task {self.task.title}"

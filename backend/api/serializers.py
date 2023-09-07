@@ -1,7 +1,14 @@
+from notifications.models import Notification
 from users.models import User, Hardskill, Achievement, Contact
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from tasks.models import Task, TaskUpdate, TaskInvitation
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
 
 
 class ContactSerializer(serializers.ModelSerializer):

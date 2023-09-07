@@ -1,9 +1,8 @@
 import datetime
-from djoser.views import UserViewSet
-from .serializers import CustomUserCreateSerializer, CustomUserRetrieveSerializer
-
 from django.db.models import Q
-from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer
+
+from notifications.models import Notification
+from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer, NotificationSerializer
 from rest_framework import viewsets, status
 from rest_framework import permissions, filters
 from rest_framework.decorators import action
@@ -16,6 +15,15 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+
+
+class UserNotificationsViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Notification.objects.filter(user=user).order_by('-created_at')
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -32,6 +40,11 @@ class TaskViewSet(viewsets.ModelViewSet):
             for user_id in invited_user_ids:
                 user = User.objects.get(id=user_id)
                 TaskInvitation.objects.create(task=task, user=user)
+
+                Notification.objects.create(
+                    user=user,
+                    message=f'Вы были приглашены в задачу "{task.title}"'
+                )
 
             return Response({"message": "Задача успешно создана"}, status=status.HTTP_201_CREATED)
         else:
@@ -59,12 +72,28 @@ class TaskViewSet(viewsets.ModelViewSet):
         task = self.get_object()
         user = request.user
 
-        if user not in task.assigned_to.all():
-            return Response({'error': 'Это не ваша задача'}, status=status.HTTP_400_BAD_REQUEST)
+        if user in task.assigned_to.all():
+            task.status = 'in_progress'
+            task.save()
+            Notification.objects.create(
+                user=user,
+                message=f'Задача "{task.title}" принята, статус изменен на "in_progress"'
+            )
 
-        task.status = 'in_progress'
-        task.save()
-        return Response({'status': 'Сотрудник принял задачу, ее статус изменен на "in_progress"'})
+            Notification.objects.create(
+                user=task.team_leader,
+                message=f'Задача "{task.title}" была принята сотрудником {user.first_name}'
+            )
+
+            invitation = get_object_or_404(TaskInvitation, task=task, user=user, accepted=False)
+            invitation.accepted = True
+            invitation.save()
+
+            task.assigned_to.add(user)
+
+            return Response({'status': 'Сотрудник принял задачу, ее статус изменен на "in_progress"'})
+        else:
+            return Response({'error': 'Это не ваша задача'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['POST'])
     def invite_users(self, request, pk=None):
@@ -74,6 +103,11 @@ class TaskViewSet(viewsets.ModelViewSet):
         for user_id in invited_user_ids:
             user = User.objects.get(id=user_id)
             TaskInvitation.objects.create(task=task, user=user)
+
+            Notification.objects.create(
+                user=user,
+                message=f'Вы были приглашены в задачу "{task.title}"'
+            )
 
         return Response({"message": "Сотрудники добавлены в задачу"}, status=status.HTTP_200_OK)
 
@@ -95,27 +129,27 @@ class TaskViewSet(viewsets.ModelViewSet):
                     assigned_user.reward_points += task.reward_points
                     assigned_user.save()
 
+                for assigned_user in task.assigned_to.all():
+                    Notification.objects.create(
+                        user=assigned_user,
+                        message=f'Задача "{task.title}" была принята и выполнена'
+                    )
+
             return Response({"message": "Принята и выполнена"}, status=status.HTTP_200_OK)
         elif review_status == 'reject':
             task.status = 'Возвращена на доработку'
             task.save()
             TaskUpdate.objects.create(task=task, user=user, status='returned_for_revision')
+
+            for assigned_user in task.assigned_to.all():
+                Notification.objects.create(
+                    user=assigned_user,
+                    message=f'Задача "{task.title}" была возвращена на доработку'
+                )
+
             return Response({"message": "Задача возвращена на доработку"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Неверный статус"}, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=True, methods=['POST'])
-    def accept_invitation(self, request, pk=None):
-        task = self.get_object()
-        user = self.request.user
-
-        invitation = get_object_or_404(TaskInvitation, task=task, user=user, accepted=False)
-        invitation.accepted = True
-        invitation.save()
-
-        task.assigned_to.add(user)
-        return Response({"message": "Сотрудник приступил к задаче"}, status=status.HTTP_200_OK)
-
 
     def get_queryset(self):
         """

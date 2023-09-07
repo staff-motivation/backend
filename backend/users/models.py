@@ -254,7 +254,7 @@ class UserContact(models.Model):
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user.first_name} - {self.contact.platform}"
+        return f"{self.user.first_name} - {self.contact.contact_type}"
 
 
 class UserHardskill(models.Model):
