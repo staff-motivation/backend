@@ -14,12 +14,12 @@ router.register(r'notifications', UserNotificationsViewSet, basename='user-notif
 app_name = 'api'
 
 urlpatterns = [
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.authtoken')),
-    path('auth/', include(router.urls)),
-    path('auth/curent_user_info/', ShortUserProfileViewSet.as_view({'get': 'list'}), name='user_profile_info'),
-    path('auth/users/my_notifications/', UserNotificationsViewSet.as_view({'get': 'list'}), name='user-notifications'),
-    path('auth/tasks/accept_task/<int:pk>/', TaskViewSet.as_view({'post': 'accept_task'}), name='accept_task'),
-    path('auth/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('auth/swagger/', SpectacularSwaggerView.as_view(url_name='api:schema'), name='swagger'),
+    path('', include('djoser.urls')),
+    path('', include('djoser.urls.authtoken')),
+    path('', include(router.urls)),
+    path('curent_user_info/', ShortUserProfileViewSet.as_view({'get': 'list'}), name='user_profile_info'),
+    path('users/my_notifications/', UserNotificationsViewSet.as_view({'get': 'list'}), name='user-notifications'),
+    path('tasks/accept_task/<int:pk>/', TaskViewSet.as_view({'post': 'accept_task'}), name='accept_task'),
+    path('/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('/swagger/', SpectacularSwaggerView.as_view(url_name='api:schema'), name='swagger'),
 ]
