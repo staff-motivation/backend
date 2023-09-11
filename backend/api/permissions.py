@@ -39,7 +39,7 @@ class CanEditUserFields(permissions.BasePermission):
         if request.user.id == obj.id:
             if request.method in permissions.SAFE_METHODS:
                 return True
-            if 'achievements' in request.data or 'hardskills' in request.data:
+            if 'achievements' in request.data:
                 return False
             return True
         return False
@@ -48,3 +48,10 @@ class CanEditUserFields(permissions.BasePermission):
 class IsTaskCreator(BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.creator == request.user
+
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj == request.user

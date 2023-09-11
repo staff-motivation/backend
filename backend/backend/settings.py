@@ -57,7 +57,7 @@ DJOSER = {
         'user': 'api.serializers.CustomUserRetrieveSerializer',
         'current_user': 'api.serializers.CustomUserRetrieveSerializer',
         'profile_info': 'api.serializers.UserPublicSerializer',
-
+        'upload_avatar': 'api.serializers.UserImageSerializer',
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.IsAuthenticated'],

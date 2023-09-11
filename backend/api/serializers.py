@@ -22,7 +22,7 @@ class AchievementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Achievement
-        fields = ('name', 'image', 'description')
+        fields = ('name', 'value', 'image', 'description')
 
 
 class HardskillsSerializer(serializers.ModelSerializer):
@@ -32,10 +32,15 @@ class HardskillsSerializer(serializers.ModelSerializer):
         fields = ('name',)
 
 
+class UserImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('image',)
+
+
 class CustomUserRetrieveSerializer(UserSerializer):
     hardskills = HardskillsSerializer(many=True, required=False)
     achievements = AchievementSerializer(many=True, required=False)
-    hardskills_read_only = serializers.BooleanField(read_only=True, default=False)
     achievements_read_only = serializers.BooleanField(read_only=True, default=False)
     reward_points = serializers.IntegerField(read_only=True)
     contacts = ContactSerializer(many=True, required=False)
@@ -50,7 +55,6 @@ class CustomUserRetrieveSerializer(UserSerializer):
                   'achievements',
                   'role',
                   'position',
-                  'hardskills_read_only',
                   'achievements_read_only',
                   'reward_points',
                   'contacts')
@@ -64,14 +68,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
         is_user_self = instance == self.context['request'].user
 
         if is_teamleader:
-            instance.hardskills.clear()
             instance.achievements.clear()
-
-            for hardskill_data in hardskills_data:
-                hardskill, created = Hardskill.objects.get_or_create(
-                    name=hardskill_data['name'])
-                instance.hardskills.add(hardskill)
-
             for achievement_data in achievements_data:
                 achievement, created = Achievement.objects.get_or_create(
                     name=achievement_data['name'],
@@ -80,6 +77,12 @@ class CustomUserRetrieveSerializer(UserSerializer):
                 instance.achievements.add(achievement)
 
         if is_user_self:
+            instance.hardskills.clear()
+            for hardskill_data in hardskills_data:
+                hardskill, created = Hardskill.objects.get_or_create(
+                    name=hardskill_data['name'])
+                instance.hardskills.add(hardskill)
+
             for contact_data in contacts_data:
                 contact_type = contact_data.get('contact_type')
                 link = contact_data.get('link')

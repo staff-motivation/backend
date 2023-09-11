@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
 from django.db import models, IntegrityError
 from django.db.models import UniqueConstraint
@@ -201,6 +202,7 @@ class User(AbstractUser):
         blank=True,
         related_name='user_contacts'
     )
+    completed_tasks_count = models.PositiveIntegerField(default=0)
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -296,6 +298,11 @@ class Achievement(models.Model):
         help_text='Введите достижение',
         max_length=MAX_LENGTH_USERNAME,
         blank=False
+    )
+    value = models.PositiveIntegerField(
+        verbose_name='Ценность',
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(100)]
     )
     image = models.ImageField(
         verbose_name='Изображение',
