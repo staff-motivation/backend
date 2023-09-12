@@ -1,8 +1,11 @@
+from django.db import models
 from notifications.models import Notification
 from users.models import User, Hardskill, Achievement, Contact
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from tasks.models import Task, TaskUpdate, TaskInvitation
+from tasks.models import Task
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -45,6 +48,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
     reward_points = serializers.IntegerField(read_only=True)
     contacts = ContactSerializer(many=True, required=False)
     completed_tasks_count = serializers.IntegerField()
+    reward_points_for_current_month = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -58,8 +62,23 @@ class CustomUserRetrieveSerializer(UserSerializer):
                   'position',
                   'achievements_read_only',
                   'reward_points',
-                  'contacts'
-                  'completed_tasks_count')
+                  'contacts',
+                  'completed_tasks_count',
+                  'reward_points_for_current_month')
+
+    def get_reward_points_for_current_month(self, obj):
+        today = date.today()
+        start_of_month = today.replace(day=1)
+        end_of_month = (today + relativedelta(
+            day=31, hour=23, minute=59, second=59, microsecond=999999))
+
+        reward_points = Task.objects.filter(
+            assigned_to=obj,
+            created_at__gte=start_of_month,
+            created_at__lt=end_of_month
+        ).aggregate(models.Sum('reward_points'))['reward_points__sum']
+
+        return reward_points or 0
 
     def update(self, instance, validated_data):
         hardskills_data = validated_data.pop('hardskills', [])
@@ -135,18 +154,6 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class TaskUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TaskUpdate
-        fields = '__all__'
-
-
-class TaskInvitationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TaskInvitation
-        fields = '__all__'
-
-
 class ShortUserProfileSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
 
@@ -158,7 +165,8 @@ class ShortUserProfileSerializer(serializers.ModelSerializer):
             'image',
             'reward_points',
             'rating',
-            'department'
+            'department',
+            'reward_points_for_current_month'
         )
 
     def get_rating(self, obj):
@@ -166,3 +174,7 @@ class ShortUserProfileSerializer(serializers.ModelSerializer):
         user_ids = [user.id for user in users]
         rating = user_ids.index(obj.id) + 1
         return rating
+
+    def get_reward_points_for_current_month(self, obj):
+        custom_serializer = CustomUserRetrieveSerializer(instance=obj)
+        return custom_serializer.get_reward_points_for_current_month(obj)

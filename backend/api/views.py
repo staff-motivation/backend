@@ -8,14 +8,13 @@ from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerialize
 from rest_framework import viewsets, status
 from rest_framework import permissions, filters
 from rest_framework.decorators import action
-from users.models import User, Hardskill, Achievement, UserAchievement
-from tasks.models import Task, TaskUpdate, TaskInvitation
+from users.models import User, Achievement, UserAchievement
+from tasks.models import Task
 from .permissions import CanEditUserFields, IsTeamLeader, IsOwnerOrReadOnly
 
 from .serializers import TaskSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from django.db import transaction
 
 
@@ -33,30 +32,15 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
-    def create(self, request):
-        serializer = TaskSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            task = serializer.save(status='created')
-            user = request.user
-            TaskInvitation.objects.create(task=task, user=user)
-            Notification.objects.create(
-                user=user,
-                message=f'Вы были приглашены в задачу "{task.title}"'
-            )
-            return Response({"message": "Задача успешно создана"}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def update_overdue_tasks(self):
         overdue_tasks = self.queryset.filter(
             deadline__lt=timezone.now(),
-            status__in=['created', 'in_progress', 'returned_for_revision'])
+            status__in=['created', 'returned_for_revision'])
         for task in overdue_tasks:
             task.status = 'Просрочена'
             task.save()
 
-    @action(detail=False, methods=['GET'])
-    def list_tasks(self, request):
+    def list(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             self.update_overdue_tasks()
             tasks = self.queryset.filter(
@@ -64,42 +48,48 @@ class TaskViewSet(viewsets.ModelViewSet):
             task_data = []
             for task in tasks:
                 task_data.append({
+                    'id': task.id,
                     'title': task.title,
                     'description': task.description,
                     'deadline': task.deadline,
                     'reward_points': task.reward_points,
-                    'status': task.status
+                    'status': task.status,
+                    'assigned_to': task.assigned_to.get_full_name(),
+                    'created_by': task.team_leader.get_full_name()
                 })
             return Response({'tasks': task_data})
         else:
             return Response({'error': 'Неавторизованный пользователь'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    @action(detail=True, methods=['POST'])
-    def accept_task(self, request, pk=None):
-        task = self.get_object()
-        user = request.user
-        invitation = get_object_or_404(TaskInvitation, task=task, user=user, accepted=False)
-        invitation.accepted = True
-        invitation.save()
-        task.status = 'in_progress'
-        task.save()
-        Notification.objects.create(
-            user=user,
-            message=f'Задача "{task.title}" принята, статус изменен на "in_progress"'
-        )
-        Notification.objects.create(
-            user=task.team_leader,
-            message=f'Задача "{task.title}" была принята исполнителем'
-        )
-        return Response({'status': 'Задача принята и статус изменен на "in_progress"'})
+    def create(self, request):
+        if not request.user.is_teamleader:
+            return Response({"error": "Доступ запрещен, создание задачи доступно только Тимлидерам"}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = TaskSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            assigned_user_id = request.data.get('assigned_to')
+            if assigned_user_id:
+                task = serializer.save(status='created')
+                assigned_user = User.objects.get(id=assigned_user_id)
+                task.assigned_to = assigned_user
+                task.save()
+                Notification.objects.create(
+                    user=assigned_user,
+                    message=f'Вы были назначены исполнителем задачи "{task.title}"'
+                )
+                return Response({"message": "Задача успешно создана"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"error": "Выберите хотя бы одного исполнителя"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['POST'])
     def send_for_review(self, request, pk=None):
         task = self.get_object()
         user = request.user
 
-        if user == task.assigned_to.first():
-            if task.status in ['in_progress', 'returned_for_revision']:  # Добавляем статус 'returned_for_revision'
+        if user == task.assigned_to:
+            if task.status in ['created', 'returned_for_revision']:
                 task.status = 'sent_for_review'
                 task.save()
                 Notification.objects.create(
@@ -108,15 +98,19 @@ class TaskViewSet(viewsets.ModelViewSet):
                 )
                 return Response({'status': 'Задача отправлена на проверку'})
             else:
-                return Response({
-                                    'error': 'Задачу можно отправить на проверку только со статусом "in_progress" или "returned_for_revision"'},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {
+                        'error': 'Задачу можно отправить на проверку только со статусом "created" или "returned_for_revision"'},
+                    status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'error': 'Это не ваша задача или у вас нет прав отправить ее на проверку'},
                             status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['POST'])
     def review_task(self, request, pk=None):
+        if not request.user.is_teamleader:
+            return Response({"error": "Доступ запрещен, завершение задачи доступно только Тимлидерам"}, status=status.HTTP_403_FORBIDDEN)
+
         task = self.get_object()
         user = self.request.user
         review_status = request.data.get('status', '')
@@ -128,27 +122,31 @@ class TaskViewSet(viewsets.ModelViewSet):
             with transaction.atomic():
                 task.status = 'Принята и выполнена'
                 task.save()
-                TaskUpdate.objects.create(task=task, user=user, status='completed')
+                assigned_user = task.assigned_to
+                assigned_user.completed_tasks_count += 1
+                assigned_user.save()
+                assigned_user.reward_points += task.reward_points
+                assigned_user.save()
+
                 Notification.objects.create(
                     user=task.team_leader,
                     message=f'Задача "{task.title}" была принята и выполнена'
                 )
                 Notification.objects.create(
-                    user=user,
+                    user=task.assigned_to,
                     message=f'Задача "{task.title}" была принята и выполнена'
                 )
             return Response({"message": "Принята и выполнена"}, status=status.HTTP_200_OK)
         elif review_status == 'reject':
             task.status = 'Возвращена на доработку'
             task.save()
-            TaskUpdate.objects.create(task=task, user=user, status='returned_for_revision')
             Notification.objects.create(
                 user=task.team_leader,
                 message=f'Задача "{task.title}" была возвращена на доработку'
             )
 
             Notification.objects.create(
-                user=task.assigned_to.first(),
+                user=task.assigned_to,
                 message=f'Задача "{task.title}" была возвращена на доработку'
             )
 

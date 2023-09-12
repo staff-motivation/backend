@@ -3,8 +3,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from rest_framework import serializers
 from django.db import models, IntegrityError
 from django.db.models import UniqueConstraint
-
 from backend.settings import MAX_LENGTH_USERNAME, MAX_LENGTH_EMAIL
+
 
 
 class UserRole(models.TextChoices):
@@ -62,8 +62,7 @@ class Hardskill(models.Model):
         verbose_name='Хардскилл',
         help_text='Введите профессиоанльный навык/хардскилл',
         max_length=MAX_LENGTH_USERNAME,
-        blank=False,
-        unique=True
+        blank=False
     )
 
     class Meta:
