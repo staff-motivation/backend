@@ -44,6 +44,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
     achievements_read_only = serializers.BooleanField(read_only=True, default=False)
     reward_points = serializers.IntegerField(read_only=True)
     contacts = ContactSerializer(many=True, required=False)
+    completed_tasks_count = serializers.IntegerField()
 
     class Meta:
         model = User
@@ -57,7 +58,8 @@ class CustomUserRetrieveSerializer(UserSerializer):
                   'position',
                   'achievements_read_only',
                   'reward_points',
-                  'contacts')
+                  'contacts'
+                  'completed_tasks_count')
 
     def update(self, instance, validated_data):
         hardskills_data = validated_data.pop('hardskills', [])

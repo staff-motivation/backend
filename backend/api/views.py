@@ -1,5 +1,6 @@
 import datetime
 from django.db.models import Q
+from django.utils import timezone
 
 from notifications.models import Notification
 from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer, NotificationSerializer, \
@@ -46,10 +47,20 @@ class TaskViewSet(viewsets.ModelViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def update_overdue_tasks(self):
+        overdue_tasks = self.queryset.filter(
+            deadline__lt=timezone.now(),
+            status__in=['created', 'in_progress', 'returned_for_revision'])
+        for task in overdue_tasks:
+            task.status = 'Просрочена'
+            task.save()
+
     @action(detail=False, methods=['GET'])
     def list_tasks(self, request):
         if request.user.is_authenticated:
-            tasks = self.queryset.filter(Q(assigned_to=request.user) | Q(team_leader=request.user))
+            self.update_overdue_tasks()
+            tasks = self.queryset.filter(
+                Q(assigned_to=request.user) | Q(team_leader=request.user))
             task_data = []
             for task in tasks:
                 task_data.append({

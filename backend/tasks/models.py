@@ -2,15 +2,6 @@ from django.db import models
 from users.models import User
 
 
-STATUS_CHOICES = [
-    ('created', 'Задача создана'),
-    ('in_progress', 'В процессе выполнения'),
-    ('sent_for_review', 'Отправлена на проверку'),
-    ('completed', 'Принята и выполнена'),
-    ('returned_for_revision', 'Возвращена на доработку'),
-]
-
-
 class Task(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -18,7 +9,7 @@ class Task(models.Model):
     reward_points = models.PositiveIntegerField(default=0)
     team_leader = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks_created')
     assigned_to = models.ManyToManyField(User, related_name='assigned_tasks', blank=True)
-    status = models.CharField(max_length=21, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=21, default='created')
 
     def __str__(self):
         return self.title
