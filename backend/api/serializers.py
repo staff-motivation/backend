@@ -1,11 +1,12 @@
 from django.db import models
+from dateutil.relativedelta import relativedelta
+from datetime import date
+
 from notifications.models import Notification
 from users.models import User, Hardskill, Achievement, Contact
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from tasks.models import Task
-from datetime import date
-from dateutil.relativedelta import relativedelta
 
 
 class AchievementUserAndDepartmentSerializer(serializers.ModelSerializer):
@@ -100,6 +101,7 @@ class UserImageSerializer(serializers.ModelSerializer):
         model = User
         fields = ('image',)
 
+
 class CustomUserRetrieveSerializer(UserSerializer):
     hardskills = HardskillsSerializer(many=True, required=False)
     achievements = AchievementSerializer(many=True, required=False)
@@ -108,6 +110,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
     contacts = ContactSerializer(many=True, required=False)
     completed_tasks_count = serializers.IntegerField()
     reward_points_for_current_month = serializers.SerializerMethodField()
+    remaining_tasks_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -123,21 +126,44 @@ class CustomUserRetrieveSerializer(UserSerializer):
                   'reward_points',
                   'contacts',
                   'completed_tasks_count',
-                  'reward_points_for_current_month')
+                  'reward_points_for_current_month',
+                  'remaining_tasks_count')
 
     def get_reward_points_for_current_month(self, obj):
         today = date.today()
         start_of_month = today.replace(day=1)
-        end_of_month = (today + relativedelta(
-            day=31, hour=23, minute=59, second=59, microsecond=999999))
+        end_of_month = today + relativedelta(day=31)
 
-        reward_points = Task.objects.filter(
+        tasks_completed = Task.objects.filter(
             assigned_to=obj,
             created_at__gte=start_of_month,
-            created_at__lt=end_of_month
-        ).aggregate(models.Sum('reward_points'))['reward_points__sum']
+            created_at__lte=end_of_month
+        ).count()
 
-        return reward_points or 0
+        total_tasks = Task.objects.filter(
+            assigned_to=obj,
+            created_at__gte=start_of_month,
+            created_at__lte=end_of_month
+        ).count()
+
+        if total_tasks == 0:
+            return 0
+        else:
+            success_percentage = (tasks_completed / total_tasks) * 100
+            return round(success_percentage, 2)
+
+    def get_remaining_tasks_count(self, obj):
+        today = date.today()
+        start_of_month = today.replace(day=1)
+        end_of_month = today + relativedelta(day=31)
+
+        total_tasks = Task.objects.filter(
+            assigned_to=obj,
+            created_at__gte=start_of_month,
+            created_at__lte=end_of_month
+        ).count()
+
+        return total_tasks - obj.completed_tasks_count
 
     def update(self, instance, validated_data):
         hardskills_data = validated_data.pop('hardskills', [])
@@ -174,6 +200,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
                     )
         instance = super().update(instance, validated_data)
         return instance
+
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):

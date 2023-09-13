@@ -272,7 +272,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-@extend_schema(description="Получение информации пользователя в хедере.")
+@extend_schema(description="Получение информации пользователя для хедера.")
 class ShortUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ShortUserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
