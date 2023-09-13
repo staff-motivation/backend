@@ -9,15 +9,15 @@ from rest_framework import serializers
 from tasks.models import Task
 
 
-class AchievementUserAndDepartmentSerializer(serializers.ModelSerializer):
-    personal_achievements = serializers.SerializerMethodField()
-    department_achievements = serializers.SerializerMethodField()
+class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
+    personal_progress = serializers.SerializerMethodField()
+    department_progress = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['personal_achievements', 'department_achievements']
+        fields = ['personal_progress', 'progress']
 
-    def get_personal_achievements(self, obj):
+    def get_personal_progress(self, obj):
         user_id = obj.id
         today = date.today()
         start_of_month = today.replace(day=1)
@@ -41,7 +41,7 @@ class AchievementUserAndDepartmentSerializer(serializers.ModelSerializer):
 
         return round(personal_achievements_percentage, 2)
 
-    def get_department_achievements(self, obj):
+    def get_department_progress(self, obj):
         if obj.department:
             department_id = obj.department.id
             today = date.today()
@@ -200,7 +200,6 @@ class CustomUserRetrieveSerializer(UserSerializer):
                     )
         instance = super().update(instance, validated_data)
         return instance
-
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):

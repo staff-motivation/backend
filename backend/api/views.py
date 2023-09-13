@@ -5,7 +5,7 @@ from drf_spectacular.utils import extend_schema
 
 from notifications.models import Notification
 from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer, NotificationSerializer, \
-    UserImageSerializer, AchievementUserAndDepartmentSerializer
+    UserImageSerializer, ProgressUserAndDepartmentSerializer
 from rest_framework import viewsets, status
 from rest_framework import permissions
 from rest_framework.decorators import action
@@ -19,9 +19,9 @@ from rest_framework.response import Response
 from django.db import transaction
 
 
-@extend_schema(description="Получение достижений пользователя и информации о департаменте.")
-class AchievementUserAndDepartmentViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = AchievementUserAndDepartmentSerializer
+@extend_schema(description="Получение прогресса достижений пользователя и информации о департаменте.")
+class ProgressUserAndDepartmentViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ProgressUserAndDepartmentSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):

@@ -5,13 +5,13 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 from .views import CustomUserViewSet, TaskViewSet, ShortUserProfileViewSet, UserNotificationsViewSet, \
-    AchievementUserAndDepartmentViewSet
+    ProgressUserAndDepartmentViewSet
 
 router = DefaultRouter()
 router.register(r'users', CustomUserViewSet, basename='user')
 router.register(r'tasks', TaskViewSet, basename='tasks')
 router.register(r'notifications', UserNotificationsViewSet, basename='user-notifications')
-router.register(r'achievements/users', AchievementUserAndDepartmentViewSet, basename='achievements-users')
+router.register(r'progress/users', ProgressUserAndDepartmentViewSet, basename='achievements-users')
 
 app_name = 'api'
 
