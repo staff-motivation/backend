@@ -84,7 +84,6 @@ class CustomUserRetrieveSerializer(UserSerializer):
         hardskills_data = validated_data.pop('hardskills', [])
         achievements_data = validated_data.pop('achievements', [])
         contacts_data = validated_data.pop('contacts', [])
-
         is_teamleader = self.context['request'].user.is_teamleader
         is_user_self = instance == self.context['request'].user
 
@@ -156,6 +155,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class ShortUserProfileSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
+    reward_points_for_current_month = serializers.SerializerMethodField()
 
     class Meta:
         model = User
