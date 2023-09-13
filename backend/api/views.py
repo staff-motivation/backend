@@ -6,11 +6,11 @@ from notifications.models import Notification
 from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer, NotificationSerializer, \
     UserImageSerializer
 from rest_framework import viewsets, status
-from rest_framework import permissions, filters
+from rest_framework import permissions
 from rest_framework.decorators import action
 from users.models import User, Achievement, UserAchievement
 from tasks.models import Task
-from .permissions import CanEditUserFields, IsTeamLeader, IsOwnerOrReadOnly
+from .permissions import IsOrdinaryUser, CanEditUserFields, IsTeamLeader, IsOwnerOrReadOnly
 
 from .serializers import TaskSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -30,7 +30,7 @@ class UserNotificationsViewSet(viewsets.ReadOnlyModelViewSet):
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOrdinaryUser]
 
     def update_overdue_tasks(self):
         overdue_tasks = self.queryset.filter(

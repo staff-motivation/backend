@@ -1,35 +1,17 @@
 from rest_framework import permissions
-from rest_framework.permissions import BasePermission
+
+
+class IsOrdinaryUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method == 'POST' and view.action == 'send_for_review':
+
+            return True
+        return request.user.is_teamleader
 
 
 class IsTeamLeader(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.is_teamleader
-
-
-class CanViewAllTasks(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated
-
-
-class CanCreateEditDeleteTasks(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_teamleader
-
-
-class CanEditStatus(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return (request.user.is_teamleader and obj.creator == request.user) or obj.assignees.filter(pk=request.user.pk).exists()
-
-
-class CanStartTask(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.assignees.filter(pk=request.user.pk).exists() and obj.status == 'created'
-
-
-class CanCompleteTask(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return request.user.is_teamleader and obj.status in ['in_progress', 'sent_for_review']
 
 
 class CanEditUserFields(permissions.BasePermission):
@@ -43,11 +25,6 @@ class CanEditUserFields(permissions.BasePermission):
                 return False
             return True
         return False
-
-
-class IsTaskCreator(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.creator == request.user
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):

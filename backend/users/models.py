@@ -172,7 +172,7 @@ class User(AbstractUser):
         default=Position.JUNIOR
     )
     experience = models.IntegerField(
-        verbose_name='Опыт работы',
+        verbose_name='Рабочий стаж в команде',
         default=1
     )
     reward_points = models.PositiveIntegerField(
