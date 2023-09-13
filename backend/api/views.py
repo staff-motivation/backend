@@ -1,10 +1,11 @@
 import datetime
 from django.db.models import Q
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 
 from notifications.models import Notification
 from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer, NotificationSerializer, \
-    UserImageSerializer
+    UserImageSerializer, AchievementUserAndDepartmentSerializer
 from rest_framework import viewsets, status
 from rest_framework import permissions
 from rest_framework.decorators import action
@@ -18,6 +19,18 @@ from rest_framework.response import Response
 from django.db import transaction
 
 
+@extend_schema(description="Получение достижений пользователя и информации о департаменте.")
+class AchievementUserAndDepartmentViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = AchievementUserAndDepartmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = User.objects.filter(pk=user.pk)
+        return queryset
+
+
+@extend_schema(description="Получение уведомлений пользователя.")
 class UserNotificationsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
@@ -32,6 +45,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated, IsOrdinaryUser]
 
+    @extend_schema(description="Обновление статуса просроченных задач.")
     def update_overdue_tasks(self):
         overdue_tasks = self.queryset.filter(
             deadline__lt=timezone.now(),
@@ -40,6 +54,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             task.status = 'Просрочена'
             task.save()
 
+    @extend_schema(description="Получение списка задач с дополнительными данными.")
     def list(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             self.update_overdue_tasks()
@@ -60,6 +75,8 @@ class TaskViewSet(viewsets.ModelViewSet):
             return Response({'tasks': task_data})
         else:
             return Response({'error': 'Неавторизованный пользователь'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    @extend_schema(description="Создание новой задачи тимлидером.")
 
     def create(self, request):
         if not request.user.is_teamleader:
@@ -83,6 +100,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(description="Отправка задачи на проверку тимлидеру.")
     @action(detail=True, methods=['POST'])
     def send_for_review(self, request, pk=None):
         task = self.get_object()
@@ -106,6 +124,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Это не ваша задача или у вас нет прав отправить ее на проверку'},
                             status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(description="Проверка задачи тимлидом и изменение её статуса.")
     @action(detail=True, methods=['POST'])
     def review_task(self, request, pk=None):
         if not request.user.is_teamleader:
@@ -154,6 +173,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         else:
             return Response({"error": "Неверный статус"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(description="Получение задач с фильтрацией.")
     def get_queryset(self):
         """
         Фильтрация задач по статусу и просроченным дедлайнам.
@@ -207,6 +227,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         self.perform_update(serializer)
         return Response(serializer.data)
 
+    @extend_schema(description="Добавление достижений в профиль пользователя.")
     @action(detail=True, methods=['patch'], permission_classes=[IsTeamLeader])
     def add_achievements(self, request, pk=None):
         user = self.get_object()
@@ -232,6 +253,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(description="Загрузка изображения для профиля пользователя.")
     @action(detail=True, methods=['post'], permission_classes=[IsOwnerOrReadOnly])
     def upload_image(self, request, pk=None):
         user = self.get_object()
@@ -241,6 +263,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(description="Удаление изображения профиля пользователя.")
     @action(detail=True, methods=['delete'], permission_classes=[IsOwnerOrReadOnly])
     def delete_image(self, request, pk=None):
         user = self.get_object()
@@ -249,7 +272,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
+@extend_schema(description="Получение информации пользователя в хедере.")
 class ShortUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ShortUserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
