@@ -143,8 +143,8 @@ class TaskViewSet(viewsets.ModelViewSet):
                 task.save()
                 assigned_user = task.assigned_to
                 assigned_user.completed_tasks_count += 1
-                assigned_user.save()
                 assigned_user.reward_points += task.reward_points
+                assigned_user.reward_points_for_current_month += task.reward_points
                 assigned_user.save()
 
                 Notification.objects.create(
@@ -232,7 +232,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     def add_achievements(self, request, pk=None):
         user = self.get_object()
         achievements_data = request.data.get('achievements', [])
-
+        user_points_updated = False
         for achievement_data in achievements_data:
             achievement, created = Achievement.objects.get_or_create(
                 name=achievement_data['name'],
@@ -241,15 +241,18 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             if 'image' in achievement_data:
                 achievement.image = achievement_data['image']
             achievement.save()
-
-            UserAchievement.objects.update_or_create(
-                user=user,
-                achievement=achievement,
-                defaults={}
-            )
-            user.reward_points += achievement.value
-            user.save()
-
+            try:
+                user_achievement, created = UserAchievement.objects.get_or_create(
+                    user=user,
+                    achievement=achievement,
+                    defaults={}
+                )
+                if created:
+                    user.reward_points = user.reward_points + achievement.value
+                    user.reward_points_for_current_month = user.reward_points_for_current_month + achievement.value
+            except Exception as e:
+                pass
+        user.save()
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

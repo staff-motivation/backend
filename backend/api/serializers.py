@@ -12,23 +12,32 @@ from tasks.models import Task
 class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
     personal_progress = serializers.SerializerMethodField()
     department_progress = serializers.SerializerMethodField()
+    total_reward_points_in_organization = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['personal_progress', 'progress']
+        fields = ['personal_progress', 'department_progress', 'total_reward_points_in_organization']
 
-    def get_personal_progress(self, obj):
-        user_id = obj.id
+    def get_metrics(self, obj):
         today = date.today()
         start_of_month = today.replace(day=1)
         end_of_month = (today + relativedelta(
             day=31, hour=23, minute=59, second=59, microsecond=999999))
+
+        user_id = obj.id
+        department_id = obj.department.id if obj.department else None
 
         personal_reward_points = Task.objects.filter(
             assigned_to=user_id,
             created_at__gte=start_of_month,
             created_at__lt=end_of_month
         ).aggregate(models.Sum('reward_points'))['reward_points__sum']
+
+        department_reward_points = Task.objects.filter(
+            assigned_to__department=department_id,
+            created_at__gte=start_of_month,
+            created_at__lt=end_of_month
+        ).aggregate(models.Sum('reward_points'))['reward_points__sum'] if department_id else None
 
         total_reward_points_in_organization = Task.objects.filter(
             created_at__gte=start_of_month,
@@ -37,36 +46,27 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
 
         personal_achievements_percentage = \
             (personal_reward_points / total_reward_points_in_organization) * 100 if (
-                        personal_reward_points is not None and total_reward_points_in_organization is not None and total_reward_points_in_organization > 0) else 0
+                    personal_reward_points is not None and total_reward_points_in_organization is not None and total_reward_points_in_organization > 0) else 0
 
-        return round(personal_achievements_percentage, 2)
+        department_achievements_percentage = \
+            (department_reward_points / total_reward_points_in_organization) * 100 if (
+                    department_reward_points is not None and total_reward_points_in_organization is not None and total_reward_points_in_organization > 0) else 0 if department_id else None
+
+        return {
+            'personal_progress': round(personal_achievements_percentage, 2),
+            'department_progress': round(department_achievements_percentage,
+                                         2) if department_achievements_percentage is not None else 0,
+            'total_reward_points_in_organization': total_reward_points_in_organization if total_reward_points_in_organization is not None else 0,
+        }
+
+    def get_personal_progress(self, obj):
+        return self.get_metrics(obj)['personal_progress']
 
     def get_department_progress(self, obj):
-        if obj.department:
-            department_id = obj.department.id
-            today = date.today()
-            start_of_month = today.replace(day=1)
-            end_of_month = (today + relativedelta(
-                day=31, hour=23, minute=59, second=59, microsecond=999999))
+        return self.get_metrics(obj)['department_progress']
 
-            department_reward_points = Task.objects.filter(
-                assigned_to__department=department_id,
-                created_at__gte=start_of_month,
-                created_at__lt=end_of_month
-            ).aggregate(models.Sum('reward_points'))['reward_points__sum']
-
-            total_reward_points_in_organization = Task.objects.filter(
-                created_at__gte=start_of_month,
-                created_at__lt=end_of_month
-            ).aggregate(models.Sum('reward_points'))['reward_points__sum']
-
-            department_achievements_percentage = \
-                (department_reward_points / total_reward_points_in_organization) * 100 if (
-                        department_reward_points is not None and total_reward_points_in_organization is not None and total_reward_points_in_organization > 0) else 0
-
-            return round(department_achievements_percentage, 2) if department_achievements_percentage is not None else 0
-        else:
-            return 0
+    def get_total_reward_points_in_organization(self, obj):
+        return self.get_metrics(obj)['total_reward_points_in_organization']
 
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -109,8 +109,9 @@ class CustomUserRetrieveSerializer(UserSerializer):
     reward_points = serializers.IntegerField(read_only=True)
     contacts = ContactSerializer(many=True, required=False)
     completed_tasks_count = serializers.IntegerField()
-    reward_points_for_current_month = serializers.SerializerMethodField()
+    reward_points_for_current_month = serializers.IntegerField()
     remaining_tasks_count = serializers.SerializerMethodField()
+    total_tasks = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -127,30 +128,20 @@ class CustomUserRetrieveSerializer(UserSerializer):
                   'contacts',
                   'completed_tasks_count',
                   'reward_points_for_current_month',
-                  'remaining_tasks_count')
+                  'remaining_tasks_count',
+                  'total_tasks',
+                  )
 
-    def get_reward_points_for_current_month(self, obj):
+    def get_total_tasks(self, instance):
         today = date.today()
         start_of_month = today.replace(day=1)
         end_of_month = today + relativedelta(day=31)
-
-        tasks_completed = Task.objects.filter(
-            assigned_to=obj,
-            created_at__gte=start_of_month,
-            created_at__lte=end_of_month
-        ).count()
-
         total_tasks = Task.objects.filter(
-            assigned_to=obj,
+            assigned_to=instance,
             created_at__gte=start_of_month,
             created_at__lte=end_of_month
         ).count()
-
-        if total_tasks == 0:
-            return 0
-        else:
-            success_percentage = (tasks_completed / total_tasks) * 100
-            return round(success_percentage, 2)
+        return total_tasks
 
     def get_remaining_tasks_count(self, obj):
         today = date.today()
@@ -240,7 +231,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class ShortUserProfileSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
-    reward_points_for_current_month = serializers.SerializerMethodField()
+    reward_points_for_current_month = serializers.IntegerField()  # Добавьте это поле
 
     class Meta:
         model = User
@@ -253,12 +244,9 @@ class ShortUserProfileSerializer(serializers.ModelSerializer):
             'department',
             'reward_points_for_current_month'
         )
+
     def get_rating(self, obj):
         users = User.objects.filter(is_active=True).order_by('-reward_points', 'email')
         user_ids = [user.id for user in users]
         rating = user_ids.index(obj.id) + 1
         return rating
-
-    def get_reward_points_for_current_month(self, obj):
-        custom_serializer = CustomUserRetrieveSerializer(instance=obj)
-        return custom_serializer.get_reward_points_for_current_month(obj)

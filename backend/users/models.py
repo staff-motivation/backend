@@ -202,6 +202,7 @@ class User(AbstractUser):
         related_name='user_contacts'
     )
     completed_tasks_count = models.PositiveIntegerField(default=0)
+    reward_points_for_current_month = models.IntegerField(default=0)
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
