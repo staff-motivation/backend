@@ -1,4 +1,6 @@
 import datetime
+import logging
+
 from django.db.models import Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -180,10 +182,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         """
         Фильтрация задач по статусу и просроченным дедлайнам.
         Пример запроса с фильтрацией - Новые задачи:
-        http://example.com/api/tasks/?status=created
-
-        Пример запроса с фильтрацией - В работе:
-        http://example.com/api/tasks/?status=in_progress
+        http://example.com/api/tasks/?status=createdx
 
         Пример запроса с фильтрацией - На подтверждении:
         http://example.com/api/tasks/?status=sent_for_review
