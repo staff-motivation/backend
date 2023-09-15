@@ -223,9 +223,6 @@ class User(AbstractUser):
     def get_full_name(self):
         return f"{self.last_name} {self.first_name}"
 
-    def get_short_name(self):
-        return self.first_name
-
     @property
     def is_admin(self):
         """
@@ -241,14 +238,6 @@ class User(AbstractUser):
         Возвращает права тимлида.
         """
         return self.role == UserRole.TEAMLEADER
-
-    @property
-    def is_role(self, role):
-        """
-        Свойство.
-        Возвращает роль / права.
-        """
-        return self.role == role
 
 
 class UserContact(models.Model):

@@ -1,9 +1,13 @@
 import datetime
+import logging
+
 from django.db.models import Q
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 
 from notifications.models import Notification
+from .filters import UserFilter
 from .serializers import CustomUserRetrieveSerializer, ShortUserProfileSerializer, NotificationSerializer, \
     UserImageSerializer, ProgressUserAndDepartmentSerializer
 from rest_framework import viewsets, status
@@ -178,10 +182,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         """
         Фильтрация задач по статусу и просроченным дедлайнам.
         Пример запроса с фильтрацией - Новые задачи:
-        http://example.com/api/tasks/?status=created
-
-        Пример запроса с фильтрацией - В работе:
-        http://example.com/api/tasks/?status=in_progress
+        http://example.com/api/tasks/?status=createdx
 
         Пример запроса с фильтрацией - На подтверждении:
         http://example.com/api/tasks/?status=sent_for_review
@@ -204,6 +205,46 @@ class TaskViewSet(viewsets.ModelViewSet):
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserRetrieveSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UserFilter
+
+    def get_queryset(self):
+        """
+        Фильтрация по роли: /api/users/?role=admin
+        Фильтрация по должности: /api/users/?position=senior
+        Фильтрация по подразделению: /api/users/?department=Backend
+        Поиск по email: /api/users/?email=user@example.com
+        Поиск по имени: /api/users/?first_name=John
+        Поиск по фамилии: /api/users/?last_name=Doe
+        """
+        queryset = super().get_queryset()
+        filters = Q()
+
+        role = self.request.query_params.get('role')
+        if role:
+            filters &= Q(role=role)
+
+        position = self.request.query_params.get('position')
+        if position:
+            filters &= Q(position=position)
+
+        department = self.request.query_params.get('department')
+        if department:
+            filters &= Q(department=department)
+
+        email = self.request.query_params.get('email')
+        if email:
+            filters &= Q(email__icontains=email)
+
+        first_name = self.request.query_params.get('first_name')
+        if first_name:
+            filters &= Q(first_name__icontains=first_name)
+
+        last_name = self.request.query_params.get('last_name')
+        if last_name:
+            filters &= Q(last_name__icontains=last_name)
+
+        return queryset.filter(filters)
 
     def get_permissions(self):
         if self.action == 'create':
