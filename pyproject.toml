@@ -1,0 +1,35 @@
+target-version = 'py39'
+
+[tool.black]
+line-length = 79
+skip-string-normalization = true
+skip-magic-trailing-comma = false
+extend-exclude = 'backend/backend/settings.py'
+
+[tool.isort]
+profile = 'black'
+
+[tool.mypy]
+exclude = ['venv/', 'migrations/']
+ignore_missing_imports = true
+
+[tool.ruff]
+select = ['E', 'F', 'B']
+ignore = []
+
+fixable = ['ALL']
+unfixable = []
+show-fixes = true
+
+exclude = [
+    '*/migrations/',
+    'settings.py',
+]
+
+per-file-ignores = {}
+
+line-length = 79
+target-version = 'py39'
+
+[tool.ruff.flake8-annotations]
+allow-star-arg-any = true
