@@ -156,3 +156,4 @@ cython_debug/
 static/
 media/
 .ruff_cache/
+.python-version
