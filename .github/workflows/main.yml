@@ -9,7 +9,7 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - name: Check out the repo
-          uses: actions/checkout@v3 
+          uses: actions/checkout@v3
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v2
         - name: Login to Docker
@@ -22,7 +22,7 @@ jobs:
           with:
             push: true
             tags: ${{ secrets.DOCKER_USERNAME }}/motivation_system
-  
+
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub
@@ -39,7 +39,6 @@ jobs:
             sudo docker pull annakharatova/frontend-motivation
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/motivation_system
             sudo docker-compose up -d
-            
+
             sudo docker-compose exec -T web python manage.py collectstatic --no-input
             sudo docker-compose exec -T web python manage.py migrate
-  

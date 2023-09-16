@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserCreationForm
-from django.utils.translation import gettext as _
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
 from tasks.models import Task
 
 from .models import Achievement, Contact, Hardskill, User
@@ -16,7 +16,6 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'team_leader', 'deadline', 'status']
     list_filter = ['status', 'team_leader']
     search_fields = ['id', 'title', 'description']
-
 
 
 class HardskillInline(admin.TabularInline):
@@ -63,36 +62,78 @@ class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     ordering = ['email']
     list_display = (
-        'email', 'is_active', 'is_superuser',
-        'role', 'position', 'experience', 'department',
+        'email',
+        'is_active',
+        'is_superuser',
+        'role',
+        'position',
+        'experience',
+        'department',
     )
     search_fields = (
-        'email', 'is_active',
-        'position', 'experience', 'department',
+        'email',
+        'is_active',
+        'position',
+        'experience',
+        'department',
     )
     # filter_vertical = ('department',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        (_('Personal info'), {'fields': (
-            'first_name', 'last_name','birthday',
-            'position', 'experience', 'department'
-        )}),
-        (_('Permissions'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser',
-                       'user_permissions', 'role'),
-        }),
-        (_('Important dates'), {'fields': ('last_login', 'date_joined')})
+        (
+            _('Personal info'),
+            {
+                'fields': (
+                    'first_name',
+                    'last_name',
+                    'birthday',
+                    'position',
+                    'experience',
+                    'department',
+                )
+            },
+        ),
+        (
+            _('Permissions'),
+            {
+                'fields': (
+                    'is_active',
+                    'is_staff',
+                    'is_superuser',
+                    'user_permissions',
+                    'role',
+                ),
+            },
+        ),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
     add_fieldsets = (
         (None, {'fields': ('email', 'password1', 'password2')}),
-        (_('Personal info'), {'fields': (
-            'first_name', 'last_name', 'birthday',
-            'position', 'experience', 'department',
-        )}),
-        (_('Permissions'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser',
-                       'user_permissions', 'role'),
-        }),
+        (
+            _('Personal info'),
+            {
+                'fields': (
+                    'first_name',
+                    'last_name',
+                    'birthday',
+                    'position',
+                    'experience',
+                    'department',
+                )
+            },
+        ),
+        (
+            _('Permissions'),
+            {
+                'fields': (
+                    'is_active',
+                    'is_staff',
+                    'is_superuser',
+                    'user_permissions',
+                    'role',
+                ),
+            },
+        ),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
     inlines = [HardskillInline, AchievementInline]
@@ -103,4 +144,3 @@ admin.site.register(User, CustomUserAdmin)
 admin.site.register(Hardskill, HardskillAdmin)
 admin.site.register(Achievement, AchievementAdmin)
 admin.site.register(Contact, ContactAdmin)
-
