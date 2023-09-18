@@ -3,7 +3,7 @@ name: Django-app workflow
 on: [push]
 
 jobs:
-  linters and tests:
+  linters_and_tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
