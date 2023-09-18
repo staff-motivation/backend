@@ -1,12 +1,14 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
 from django.conf import settings
 from django.conf.locale.ru import formats as ru_formats
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-m18q#kk2ku()fjg*kc5rp9%6h=ynfc4x2b4cqj1&@i2*xqy*k='
+SECRET_KEY = (
+    'django-insecure-m18q#kk2ku()fjg*kc5rp9%6h=ynfc4x2b4cqj1&@i2*xqy*k='
+)
 
 DEBUG = True
 
@@ -35,7 +37,9 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
@@ -68,7 +72,7 @@ DJOSER = {
         'profile_info': ['rest_framework.permissions.IsAuthenticated'],
     },
     'EMAIL_BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails')
+    'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails'),
 }
 
 MIDDLEWARE = [

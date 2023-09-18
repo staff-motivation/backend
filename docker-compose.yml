@@ -6,7 +6,7 @@ services:
   #     - /var/lib/postgresql/data/
   #   env_file:
   #     - ./.env
-  
+
   web:
     image: yuraskv/motivation_system:latest
     restart: always
@@ -23,7 +23,7 @@ services:
       - ./frontend/:/app/result_build/
     depends_on:
       - web
-    
+
   nginx:
     image: nginx:1.21.3-alpine
     ports:

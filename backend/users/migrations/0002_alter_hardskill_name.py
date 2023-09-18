@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('users', '0001_initial'),
     ]
@@ -13,6 +12,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='hardskill',
             name='name',
-            field=models.CharField(help_text='Введите профессиоанльный навык/хардскилл', max_length=255, verbose_name='Хардскилл'),
+            field=models.CharField(
+                help_text='Введите профессиоанльный навык/хардскилл',
+                max_length=255,
+                verbose_name='Хардскилл',
+            ),
         ),
     ]

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('users', '0002_alter_hardskill_name'),
     ]
@@ -18,6 +17,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='experience',
-            field=models.IntegerField(default=1, verbose_name='Рабочий стаж в команде'),
+            field=models.IntegerField(
+                default=1, verbose_name='Рабочий стаж в команде'
+            ),
         ),
     ]

@@ -4,19 +4,35 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
             name='Comment',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('comment_text', models.TextField(verbose_name='Текст комментария')),
-                ('comment_date', models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Дата комментария')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'comment_text',
+                    models.TextField(verbose_name='Текст комментария'),
+                ),
+                (
+                    'comment_date',
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        db_index=True,
+                        verbose_name='Дата комментария',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Комментарий',
@@ -26,10 +42,32 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='News',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('news_image', models.ImageField(blank=True, upload_to='', verbose_name='Картинка новости')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'news_image',
+                    models.ImageField(
+                        blank=True,
+                        upload_to='',
+                        verbose_name='Картинка новости',
+                    ),
+                ),
                 ('news_text', models.TextField(verbose_name='Текст новости')),
-                ('news_date', models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Дата публикации новости')),
+                (
+                    'news_date',
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        db_index=True,
+                        verbose_name='Дата публикации новости',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Новость',
