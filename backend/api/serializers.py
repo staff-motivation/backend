@@ -26,12 +26,7 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
 
         user_id = obj.id
         department_id = obj.department.id if obj.department else None
-
-        personal_reward_points = Task.objects.filter(
-            assigned_to=user_id,
-            created_at__gte=start_of_month,
-            created_at__lt=end_of_month
-        ).aggregate(models.Sum('reward_points'))['reward_points__sum']
+        personal_reward_points = obj.reward_points_for_current_month
 
         department_reward_points = Task.objects.filter(
             assigned_to__department=department_id,
@@ -46,7 +41,8 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
 
         personal_achievements_percentage = \
             (personal_reward_points / total_reward_points_in_organization) * 100 if (
-                    personal_reward_points is not None and total_reward_points_in_organization is not None and total_reward_points_in_organization > 0) else 0
+                    personal_reward_points is not None and total_reward_points_in_organization is not None and total_reward_points_in_organization > 0
+            ) else 0
 
         department_achievements_percentage = \
             (department_reward_points / total_reward_points_in_organization) * 100 if (
@@ -223,6 +219,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     team_leader = serializers.HiddenField(default=serializers.CurrentUserDefault())
     status = serializers.CharField(default='created')
+    reward_points = serializers.IntegerField(required=True)
 
     class Meta:
         model = Task
