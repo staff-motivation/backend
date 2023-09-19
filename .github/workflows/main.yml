@@ -1,17 +1,20 @@
-name: Django-app workflow
+name: Motivation system workflow
 
-on: [push]
+on:
+  push:
+  schedule:
+    - cron : '2 0 * * *'
 
 jobs:
   linters_and_tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.9
-
+        cache:  'pip'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -19,13 +22,11 @@ jobs:
     - name: Check with black
       id: black
       continue-on-error: true
-      run: |
-        black .
+      run: black .
     - name: Check with ruff
       id: ruff
       continue-on-error: true
-      run: |
-        ruff .
+      run: ruff .
 
 
   build_and_push_to_docker_hub:
@@ -34,16 +35,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       - name: Login to Docker
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Push to Docker Hub
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/motivation_system
@@ -59,10 +60,11 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            sudo docker-compose stop
-            sudo docker-compose rm web
-            sudo docker pull annakharatova/frontend-motivation
+            sudo docker-compose down
+            sudo docker image rm ${{ secrets.DOCKER_USERNAME }}/motivation_system
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/motivation_system
+            sudo docker image rm ${{ secrets.DOCKER_FRONT }}/frontend-motivation
+            sudo docker pull ${{ secrets.DOCKER_FRONT }}/frontend-motivation
             sudo docker-compose up -d
 
             sudo docker-compose exec -T web python manage.py collectstatic --no-input

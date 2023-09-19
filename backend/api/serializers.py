@@ -29,7 +29,6 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
             day=31, hour=23, minute=59, second=59, microsecond=999999
         )
 
-        user_id = obj.id
         department_id = obj.department.id if obj.department else None
         personal_reward_points = obj.reward_points_for_current_month
 
