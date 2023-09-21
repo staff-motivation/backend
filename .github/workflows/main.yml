@@ -2,8 +2,8 @@ name: Motivation system workflow
 
 on:
   push:
-  schedule:
-    - cron : '2 0 * * *'
+  # schedule:
+  #   - cron : '2 0 * * *'
 
 jobs:
   linters_and_tests:
