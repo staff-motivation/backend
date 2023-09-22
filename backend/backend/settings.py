@@ -55,8 +55,9 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': False,
-    'SEND_CONFIRMATION_EMAIL': False,
+    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
     'SERIALIZERS': {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
         'user': 'api.serializers.CustomUserRetrieveSerializer',
@@ -70,7 +71,8 @@ DJOSER = {
         'user_delete': ['rest_framework.permissions.IsAdminUser'],
         'profile_info': ['rest_framework.permissions.IsAuthenticated'],
     },
-    'EMAIL_BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    # 'EMAIL_BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    'EMAIL_BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
     'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails'),
 }
 
@@ -117,24 +119,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', default='5432'),
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': os.getenv('DB_ENGINE'),
-#         'NAME': os.getenv('DB_NAME'),
-#         'USER': os.getenv('POSTGRES_USER'),
-#         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-#         'HOST': os.getenv('DB_HOST'),
-#         'PORT': os.getenv('DB_PORT')
-#     }
-# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -198,10 +182,13 @@ DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
 # емейл, который будет указан в поле "От кого".
 EMAIL_HOST_USER = 'motivation-system@yandex.ru'
 # ваш емейл на Яндексе. Как правило, идентичен предыдущему пункту
+SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_ADMIN = EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 # пароль ПРИЛОЖЕНИЯ, который нужно создать в настройках Яндекса заранее.
 #  Это не пароль от вашего емейла!
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 
 CORS_URLS_REGEX = r'^/api/.*$'
 CORS_ALLOWED_ORIGINS = [
