@@ -178,6 +178,7 @@ SPECTACULAR_SETTINGS = {
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
 # емейл, который будет указан в поле "От кого".
 EMAIL_HOST_USER = 'motivation-system@yandex.ru'
