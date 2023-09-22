@@ -15,10 +15,10 @@ def send_registration_email(sender, user, request, **kwargs):
             f'Добавлен новый сотрудник - {user.email} '
             'Присвойте ему токен для дальнейшей работы.'
         )
-        from_email = 'noreply@example.com'
+        from_email = 'motivation-system@yandex.ru'
         # указываем почтовый ящик от которого будет приходитьс рассылка
         recipient_list = [user.email]
-        stuff_recipient_list = ['admin@example.com']
+        stuff_recipient_list = ['motivation-system@yandex.ru']
         print(f'Sending email to: {recipient_list}')
 
         send_mail(subject, message, from_email, recipient_list)
