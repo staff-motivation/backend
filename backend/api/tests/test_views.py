@@ -1,17 +1,11 @@
 from datetime import datetime
+
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
-from unittest.mock import patch
-
-from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-
-from users.models import (
-    Achievement, Position, User, UserRole,
-    UserAchievement
-)
 from tasks.models import Task
+from users.models import Achievement, Position, User, UserAchievement, UserRole
 
 
 class TaskViewSetTestCase(TestCase):
@@ -52,7 +46,7 @@ class TaskViewSetTestCase(TestCase):
             reward_points=50,
             team_leader=self.team_leader,
             assigned_to=self.executor,
-            status='created'
+            status='created',
         )
 
     def test_create_task_as_team_leader(self):
@@ -63,14 +57,14 @@ class TaskViewSetTestCase(TestCase):
         response = self.client.post(
             'api/tasks',
             {
-                "title": "Тестовая задача",
-                "description": "Описание",
-                "deadline": "2023-12-30 23:59",
-                "reward_points": 300,
-                "team_leader": 1,
-                "assigned_to": 2,
-                "status": "created"
-            }
+                'title': 'Тестовая задача',
+                'description': 'Описание',
+                'deadline': '2023-12-30 23:59',
+                'reward_points': 300,
+                'team_leader': 1,
+                'assigned_to': 2,
+                'status': 'created',
+            },
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Task.objects.count(), 2)
@@ -86,11 +80,11 @@ class TaskViewSetTestCase(TestCase):
             'api/tasks',
             {
                 'title': 'New Task',
-                'description':'Описание',
-                'reward_points':50,
-                'team_leader':self.team_leader,
-                'assigned_to':self.executor
-            }
+                'description': 'Описание',
+                'reward_points': 50,
+                'team_leader': self.team_leader,
+                'assigned_to': self.executor,
+            },
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Task.objects.count(), 1)
@@ -135,14 +129,13 @@ class TaskViewSetTestCase(TestCase):
 
     def test_review_task_approve(self):
         """
-        Тимлид принимает задачу. Ok. 
+        Тимлид принимает задачу. Ok.
         Увеличивается счетчик выполненных задач.
         Исполнителю начилсяются баллы за задачу.
         """
         self.client.force_authenticate(user=self.team_leader)
         response = self.client.post(
-            f'/api/tasks/{self.task.id}/review_task/',
-            {'status': 'approve'}
+            f'/api/tasks/{self.task.id}/review_task/', {'status': 'approve'}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.task.refresh_from_db()
@@ -157,8 +150,7 @@ class TaskViewSetTestCase(TestCase):
         """
         self.client.force_authenticate(user=self.team_leader)
         response = self.client.post(
-            f'/api/tasks/{self.task.id}/review_task/',
-            {'status': 'reject'}
+            f'/api/tasks/{self.task.id}/review_task/', {'status': 'reject'}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.task.refresh_from_db()
@@ -240,7 +232,7 @@ class CustomUserViewSetTestCase(TestCase):
     #     self.assertEqual(response.status_code, 200)
     #     usernames = [user['first_name'] for user in response.data]
     #     self.assertEqual(usernames, ['User', 'User1', 'User2'])
-    
+
     # def test_filter_users_by_role(self):
     #     """
     #     Фильтрация пользователей по роли.
@@ -250,7 +242,7 @@ class CustomUserViewSetTestCase(TestCase):
     #     self.assertEqual(response.status_code, 200)
     #     first_names = [user['first_name'] for user in response.data]
     #     self.assertEqual(first_names, ['User', 'User1'])
-    
+
     # def test_filter_users_by_position(self):
     #     """
     #     Фильтрация пользователей по позиции.
@@ -260,7 +252,7 @@ class CustomUserViewSetTestCase(TestCase):
     #     self.assertEqual(response.status_code, 200)
     #     first_names = [user['first_name'] for user in response.data]
     #     self.assertEqual(first_names, ['User3'])
-    
+
     # def test_filter_users_by_email(self):
     #     """
     #     Фильтрация пользователей по email.
@@ -316,8 +308,7 @@ class AchievementViewSetTestCase(TestCase):
             is_active=True,
         )
         self.achievement = Achievement.objects.create(
-            name='Achievement 1',
-            value=10
+            name='Achievement 1', value=10
         )
 
     def test_access_achievments_unauthorized_user(self):
@@ -326,9 +317,8 @@ class AchievementViewSetTestCase(TestCase):
         """
         with self.assertRaises(PermissionDenied):
             UserAchievement.objects.create(
-                user=self.user,
-                achievement=self.achievement
-        )
+                user=self.user, achievement=self.achievement
+            )
 
     def test_access_only_for_team_leader(self):
         """
@@ -337,6 +327,5 @@ class AchievementViewSetTestCase(TestCase):
         self.client.force_login(self.non_team_leader)
         with self.assertRaises(PermissionDenied):
             UserAchievement.objects.create(
-                user=self.user,
-                achievement=self.achievement
-        )
+                user=self.user, achievement=self.achievement
+            )

@@ -1,8 +1,15 @@
 from django.db import IntegrityError
 from django.test import TestCase
 from users.models import (
-    Achievement, Contact, Department, Hardskill, Position,
-    User, UserAchievement, UserHardskill, UserRole
+    Achievement,
+    Contact,
+    Department,
+    Hardskill,
+    Position,
+    User,
+    UserAchievement,
+    UserHardskill,
+    UserRole,
 )
 
 
@@ -14,12 +21,9 @@ class UserModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         department = Department.objects.create(
-            name='Backend',
-            description='Test department'
+            name='Backend', description='Test department'
         )
-        hardskill = Hardskill.objects.create(
-            name='Python'
-        )
+        hardskill = Hardskill.objects.create(name='Python')
         User.objects.create(
             department=department,
             email='test@mail.ru',
@@ -54,7 +58,7 @@ class UserModelTest(TestCase):
             with self.subTest(field=field):
                 field_label = user._meta.get_field(field).verbose_name
                 self.assertEqual(field_label, label)
-    
+
     def test_str_method(self):
         user = User.objects.get(id=1)
         expected_str = 'User Userov'
@@ -97,8 +101,7 @@ class DepartmentModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         Department.objects.create(
-            name='Test Department',
-            description='Test description'
+            name='Test Department', description='Test description'
         )
 
     def test_name_field(self):
@@ -126,12 +129,10 @@ class HardskillModelTest(TestCase):
     """
     Тестирование модели Hardskill.
     """
-        
+
     @classmethod
     def setUpTestData(cls):
-        Hardskill.objects.create(
-            name='Test Hardskill'
-        )
+        Hardskill.objects.create(name='Test Hardskill')
 
     def test_name_field(self):
         hardskill = Hardskill.objects.get(id=1)
@@ -163,13 +164,8 @@ class UserHardskillModelTest(TestCase):
             is_staff=True,
             is_active=True,
         )
-        hardskill = Hardskill.objects.create(
-            name='Test Hardskill'
-        )
-        UserHardskill.objects.create(
-            user=user,
-            hardskill=hardskill
-        )
+        hardskill = Hardskill.objects.create(name='Test Hardskill')
+        UserHardskill.objects.create(user=user, hardskill=hardskill)
 
     def test_user_field(self):
         user_hardskill = UserHardskill.objects.get(id=1)
@@ -191,9 +187,7 @@ class AchievementModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         Achievement.objects.create(
-            name='Test Achievement',
-            value=10,
-            description='Test Description'
+            name='Test Achievement', value=10, description='Test Description'
         )
 
     def test_name_max_length(self):
@@ -203,12 +197,16 @@ class AchievementModelTest(TestCase):
 
     def test_value_min_value(self):
         achievement = Achievement.objects.get(id=1)
-        min_value = achievement._meta.get_field('value').validators[0].limit_value
+        min_value = (
+            achievement._meta.get_field('value').validators[0].limit_value
+        )
         self.assertEquals(min_value, 1)
 
     def test_value_max_value(self):
         achievement = Achievement.objects.get(id=1)
-        max_value = achievement._meta.get_field('value').validators[1].limit_value
+        max_value = (
+            achievement._meta.get_field('value').validators[1].limit_value
+        )
         self.assertEquals(max_value, 100)
 
     def test_description_blank(self):
@@ -237,22 +235,15 @@ class UserAchievementModelTest(TestCase):
             is_active=True,
         )
         achievement = Achievement.objects.create(
-            name='Test Achievement',
-            value=10
+            name='Test Achievement', value=10
         )
-        UserAchievement.objects.create(
-            user=user,
-            achievement=achievement
-        )
+        UserAchievement.objects.create(user=user, achievement=achievement)
 
     def test_unique_constraint(self):
         user = User.objects.get(id=1)
         achievement = Achievement.objects.get(id=1)
         with self.assertRaises(IntegrityError):
-            UserAchievement.objects.create(
-                user=user,
-                achievement=achievement
-            )
+            UserAchievement.objects.create(user=user, achievement=achievement)
 
 
 class ContactModelTest(TestCase):
@@ -275,15 +266,13 @@ class ContactModelTest(TestCase):
             is_active=True,
         )
         Contact.objects.create(
-            user=user,
-            contact_type='Email',
-            link='test@mail.ru'
+            user=user, contact_type='Email', link='test@mail.ru'
         )
 
     def test_contact_str_method(self):
         contact = Contact.objects.get(id=1)
         self.assertEqual(str(contact), 'User - Email: test@mail.ru')
-    
+
     def test_contact_user_relation(self):
         user = User.objects.get(id=1)
         contact = Contact.objects.get(id=1)
@@ -296,7 +285,7 @@ class ContactModelTest(TestCase):
         self.assertLessEqual(len(contact.contact_type), 50)
 
     def test_contact_link_field(self):
-        contact = Contact.objects.get(id=1)        
+        contact = Contact.objects.get(id=1)
         self.assertEqual(contact.link, 'test@mail.ru')
         self.assertIsInstance(contact.link, str)
         self.assertLessEqual(len(contact.link), 255)
