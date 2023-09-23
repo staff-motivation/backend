@@ -14,7 +14,7 @@ class ContactAdmin(admin.ModelAdmin):
 
 class DepartmentAdmin(admin.ModelAdmin):
     model = Department
-    list_display = ('user', 'description', 'image')
+    list_display = ('name', 'description', 'image')
 
 
 class TaskAdmin(admin.ModelAdmin):
@@ -144,6 +144,7 @@ class CustomUserAdmin(UserAdmin):
     inlines = [HardskillInline, AchievementInline]
 
 
+admin.site.register(Department, DepartmentAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Hardskill, HardskillAdmin)
