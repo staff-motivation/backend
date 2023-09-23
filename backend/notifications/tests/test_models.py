@@ -1,4 +1,3 @@
-import datetime
 from django.test import TestCase
 from notifications.models import Notification
 from users.models import Position, User, UserRole
@@ -23,17 +22,11 @@ class NotificationModelTest(TestCase):
             is_staff=True,
             is_active=True,
         )
-        Notification.objects.create(
-            user=user,
-            message='Тестовое уведомление'
-        )
+        Notification.objects.create(user=user, message='Тестовое уведомление')
 
     def test_field_labels(self):
         notification = Notification.objects.get(id=1)
-        labels = {
-            'user': 'user',
-            'message': 'message'
-        }
+        labels = {'user': 'user', 'message': 'message'}
         for field, label in labels.items():
             with self.subTest(field=field):
                 field_label = notification._meta.get_field(field).verbose_name
