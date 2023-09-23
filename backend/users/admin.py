@@ -5,11 +5,16 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from tasks.models import Task
 
-from .models import Achievement, Contact, Hardskill, User
+from .models import Achievement, Department, Contact, Hardskill, User
 
 
 class ContactAdmin(admin.ModelAdmin):
     list_display = ('user', 'contact_type', 'link')
+
+
+class DepartmentAdmin(admin.ModelAdmin):
+    model = Department
+    list_display = ('name', 'description', 'image')
 
 
 class TaskAdmin(admin.ModelAdmin):
@@ -139,6 +144,7 @@ class CustomUserAdmin(UserAdmin):
     inlines = [HardskillInline, AchievementInline]
 
 
+admin.site.register(Department, DepartmentAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Hardskill, HardskillAdmin)

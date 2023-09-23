@@ -36,7 +36,7 @@ class DepartmentName(models.TextChoices):
 class Department(models.Model):
     name = models.CharField(
         verbose_name='Подразделение',
-        max_length=max(len(_[0]) for _ in UserRole.choices),
+        max_length=max(len(_[0]) for _ in DepartmentName.choices),
         choices=DepartmentName.choices,
         default=DepartmentName.NONE,
     )
@@ -72,8 +72,8 @@ class Hardskill(models.Model):
         verbose_name = 'Хардскилл'
         verbose_name_plural = 'Хардскиллы'
 
-        def __str__(self):
-            return self.name
+    def __str__(self):
+        return self.name
 
 
 class Contact(models.Model):
@@ -308,8 +308,8 @@ class Achievement(models.Model):
         verbose_name = 'Достижение'
         verbose_name_plural = 'Достижения'
 
-        def __str__(self):
-            return self.name
+    def __str__(self):
+        return self.name
 
 
 class UserAchievement(models.Model):
