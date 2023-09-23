@@ -11,7 +11,7 @@ class News(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='news'
     )
 
-    news_title = (models.TextField(verbose_name='Заголовок новости'),)
+    news_title = models.TextField(verbose_name='Заголовок новости')
     news_image = models.ImageField('Картинка новости', blank=True)
     news_text = models.TextField(verbose_name='Текст новости')
     news_date = models.DateTimeField(
