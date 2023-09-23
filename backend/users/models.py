@@ -72,8 +72,8 @@ class Hardskill(models.Model):
         verbose_name = 'Хардскилл'
         verbose_name_plural = 'Хардскиллы'
 
-        def __str__(self):
-            return self.name
+    def __str__(self):
+        return self.name
 
 
 class Contact(models.Model):
@@ -131,6 +131,8 @@ class User(AbstractUser):
         null=True,
         blank=True,
         related_name='users_department',
+        choices=DepartmentName.choices,
+        default=DepartmentName.NONE,
     )
     image = models.ImageField(
         verbose_name='Изображение',
@@ -308,8 +310,8 @@ class Achievement(models.Model):
         verbose_name = 'Достижение'
         verbose_name_plural = 'Достижения'
 
-        def __str__(self):
-            return self.name
+    def __str__(self):
+        return self.name
 
 
 class UserAchievement(models.Model):

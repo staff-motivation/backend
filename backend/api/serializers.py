@@ -5,7 +5,7 @@ from django.db import models
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from notifications.models import Notification
 from rest_framework import serializers
-from signal import send_registration_email
+from .signals import send_registration_email
 from tasks.models import Task
 from users.models import Achievement, Contact, Hardskill, User
 
@@ -250,7 +250,6 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         data.pop('password_confirmation')
         send_registration_email(self, data['email'])
         return data
-
 
 
 class TaskSerializer(serializers.ModelSerializer):
