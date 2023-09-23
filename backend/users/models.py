@@ -36,7 +36,7 @@ class DepartmentName(models.TextChoices):
 class Department(models.Model):
     name = models.CharField(
         verbose_name='Подразделение',
-        max_length=max(len(_[0]) for _ in UserRole.choices),
+        max_length=max(len(_[0]) for _ in DepartmentName.choices),
         choices=DepartmentName.choices,
         default=DepartmentName.NONE,
     )
@@ -131,8 +131,6 @@ class User(AbstractUser):
         null=True,
         blank=True,
         related_name='users_department',
-        choices=DepartmentName.choices,
-        default=DepartmentName.NONE,
     )
     image = models.ImageField(
         verbose_name='Изображение',
