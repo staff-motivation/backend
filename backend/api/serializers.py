@@ -247,7 +247,6 @@ class CustomUserCreateSerializer(UserCreateSerializer):
                 'Не все обязательные поля заполнены.'
             )
         data.pop('password_confirmation')
-        # send_registration_email(self, data['email'])
         return data
 
 
