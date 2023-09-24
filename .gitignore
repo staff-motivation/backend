@@ -157,3 +157,4 @@ static/
 media/
 .ruff_cache/
 .python-version
+.pytest_cache
