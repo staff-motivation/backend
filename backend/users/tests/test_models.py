@@ -193,21 +193,21 @@ class AchievementModelTest(TestCase):
     def test_name_max_length(self):
         achievement = Achievement.objects.get(id=1)
         max_length = achievement._meta.get_field('name').max_length
-        self.assertEquals(max_length, 255)
+        self.assertEqual(max_length, 255)
 
     def test_value_min_value(self):
         achievement = Achievement.objects.get(id=1)
         min_value = (
             achievement._meta.get_field('value').validators[0].limit_value
         )
-        self.assertEquals(min_value, 1)
+        self.assertEqual(min_value, 1)
 
     def test_value_max_value(self):
         achievement = Achievement.objects.get(id=1)
         max_value = (
             achievement._meta.get_field('value').validators[1].limit_value
         )
-        self.assertEquals(max_value, 100)
+        self.assertEqual(max_value, 100)
 
     def test_description_blank(self):
         achievement = Achievement.objects.get(id=1)

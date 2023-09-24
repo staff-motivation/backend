@@ -58,9 +58,9 @@ class TaskModelTest(TestCase):
         max_value = (
             task._meta.get_field('reward_points').validators[1].limit_value
         )
-        self.assertEquals(min_value, 1)
-        self.assertEquals(max_value, 100)
+        self.assertEqual(min_value, 1)
+        self.assertEqual(max_value, 100)
 
     def test_str_method(self):
         task = Task.objects.get(id=1)
-        self.assertEquals(str(task), 'Тестовая задача')
+        self.assertEqual(str(task), 'Тестовая задача')
