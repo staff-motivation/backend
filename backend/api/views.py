@@ -91,7 +91,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                         'reward_points': task.reward_points,
                         'status': task.status,
                         'assigned_to': task.assigned_to.get_full_name(),
-                        'created_by': task.team_leader.get_full_name(),
+                        'created_at': task.team_leader.get_full_name(),
                     }
                 )
             return Response({'tasks': task_data})
