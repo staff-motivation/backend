@@ -38,47 +38,6 @@ INSTALLED_APPS = [
     'notifications.apps.NotificationsConfig',
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend'
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
-
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-DJOSER = {
-    # 'HIDE_USERS': False,
-    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    # 'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': True,
-    # 'SEND_CONFIRMATION_EMAIL': True,
-    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
-    'SERIALIZERS': {
-        'user_create': 'api.serializers.CustomUserCreateSerializer',
-        'user': 'api.serializers.CustomUserRetrieveSerializer',
-        'current_user': 'api.serializers.CustomUserRetrieveSerializer',
-        'profile_info': 'api.serializers.UserPublicSerializer',
-        'upload_avatar': 'api.serializers.UserImageSerializer',
-        # 'activation': 'djoser.email.ActivationEmail',
-    },
-    'PERMISSIONS': {
-        'user_list': ['rest_framework.permissions.IsAuthenticated'],
-        'user': ['api.permissions.CanEditUserFields'],
-        'user_delete': ['rest_framework.permissions.IsAdminUser'],
-        'profile_info': ['rest_framework.permissions.IsAuthenticated'],
-    },
-    # 'EMAIL_BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    'EMAIL_BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
-    # 'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails'),
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -169,42 +128,56 @@ AUTH_USER_MODEL = 'users.User'
 settings.DATE_FORMAT = 'd.m.Y'
 ru_formats.DATE_FORMAT = 'd.m.Y'
 
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'My API Documentation',
-    'DESCRIPTION': 'Documentation for my Django API built with DRF',
-    'VERSION': '1.0.0',
-    # 'SCHEMA_PATH_PREFIX': '/api',
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Вариант рассылки для отладки кода
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# EMAIL_HOST = 'localhost'
-# EMAIL_PORT = 25
-# EMAIL_HOST_USER = 'sys.motivation@gmail.com'
-# EMAIL_HOST_PASSWORD = 'Motivate!123'
-# EMAIL_USE_TLS = False
-
-# Продуктовый вариант - требует указать почту яндекса
-# и приложить к ней пароль приложения.
-
-# EMAIL_HOST = 'smtp.yandex.ru'
-# EMAIL_PORT = 465
-# EMAIL_USE_SSL = True
-# EMAIL_USE_TLS = False
-# DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
-# # емейл, который будет указан в поле "От кого".
-# EMAIL_HOST_USER = 'motivation-system@yandex.ru'
-# # ваш емейл на Яндексе. Как правило, идентичен предыдущему пункту
-# SERVER_EMAIL = EMAIL_HOST_USER
-# EMAIL_ADMIN = EMAIL_HOST_USER
-# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-# пароль ПРИЛОЖЕНИЯ, который нужно создать в настройках Яндекса заранее.
-#  Это не пароль от вашего емейла!
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'skvmrelay.netangels.ru'
-EMAIL_PORT = 25
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
+
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL': '#/activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+    'SERIALIZERS': {
+        'user_create': 'api.serializers.CustomUserCreateSerializer',
+        'user': 'api.serializers.CustomUserRetrieveSerializer',
+        'current_user': 'api.serializers.CustomUserRetrieveSerializer',
+        'profile_info': 'api.serializers.UserPublicSerializer',
+        'upload_avatar': 'api.serializers.UserImageSerializer',
+    },
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.IsAuthenticated'],
+        'user': ['api.permissions.CanEditUserFields'],
+        'user_delete': ['rest_framework.permissions.IsAdminUser'],
+        'profile_info': ['rest_framework.permissions.IsAuthenticated'],
+    },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'My API Documentation',
+    'DESCRIPTION': 'Documentation for Staff-motivation API built with DRF',
+    'VERSION': '1.0.0',
+}
+
+if not DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'skvmrelay.netangels.ru'
+    EMAIL_PORT = 25
 
 
 CORS_URLS_REGEX = r'^/api/.*$'
