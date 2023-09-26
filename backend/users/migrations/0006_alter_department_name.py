@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('users', '0005_auto_20230923_1456'),
     ]
@@ -13,6 +12,17 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='department',
             name='name',
-            field=models.CharField(choices=[('Backend', 'Backend'), ('Frontend', 'Frontend'), ('UX_UI', 'Ux Ui'), ('QA', 'Qa'), ('None', 'None')], default='None', max_length=10, verbose_name='Подразделение'),
+            field=models.CharField(
+                choices=[
+                    ('Backend', 'Backend'),
+                    ('Frontend', 'Frontend'),
+                    ('UX_UI', 'Ux Ui'),
+                    ('QA', 'Qa'),
+                    ('None', 'None'),
+                ],
+                default='None',
+                max_length=10,
+                verbose_name='Подразделение',
+            ),
         ),
     ]
