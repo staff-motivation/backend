@@ -105,7 +105,7 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
 
     def get_total_reward_points_in_organization(self, obj):
         return self.get_metrics(obj)['total_reward_points_in_organization']
-    
+
     def get_progress_for_deadline(self, obj):
         return self.get_metrics(obj)['progress_for_deadline']
 
