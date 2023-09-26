@@ -61,11 +61,10 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             sudo docker-compose down
-            sudo docker image rm ${{ secrets.DOCKER_USERNAME }}/motivation_system
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/motivation_system
-            sudo docker image rm ${{ secrets.DOCKER_FRONT }}/frontend-motivation
             sudo docker pull ${{ secrets.DOCKER_FRONT }}/frontend-motivation
             sudo docker-compose up -d
 
             sudo docker-compose exec -T web python manage.py collectstatic --no-input
             sudo docker-compose exec -T web python manage.py migrate
+            sudo docker image prune -f
