@@ -34,11 +34,11 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
         current_year, current_month = today.year, today.month
         days_in_month = monthrange(current_year, current_month)[1]
         is_overdue = Task.objects.filter(
-                is_overdue=True,
-                deadline__month=current_month,
-                deadline__year=current_year,
-                assigned_to=obj.id
-            ).exists()
+            is_overdue=True,
+            deadline__month=current_month,
+            deadline__year=current_year,
+            assigned_to=obj.id,
+        ).exists()
 
         department_id = obj.department.id if obj.department else None
         personal_reward_points = obj.reward_points_for_current_month
@@ -94,7 +94,7 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
             'total_reward_points_in_organization': total_reward_points_in_organization  # noqa 501
             if total_reward_points_in_organization is not None
             else 0,
-            'progress_for_deadline': round(progress_for_deadline)
+            'progress_for_deadline': round(progress_for_deadline),
         }
 
     def get_personal_progress(self, obj):
@@ -284,9 +284,8 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class ShortUserProfileSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
-    reward_points_for_current_month = (
-        serializers.IntegerField()
-    )  # Добавьте это поле
+    reward_points_for_current_month = serializers.IntegerField()
+    department = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -307,3 +306,6 @@ class ShortUserProfileSerializer(serializers.ModelSerializer):
         user_ids = [user.id for user in users]
         rating = user_ids.index(obj.id) + 1
         return rating
+
+    def get_department(self, obj):
+        return str(self.context['request'].user.department)
