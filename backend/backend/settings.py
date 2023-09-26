@@ -54,13 +54,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DJOSER = {
-    'HIDE_USERS': False,
-    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': False,
-    'SEND_CONFIRMATION_EMAIL': False,
-    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
+    # 'HIDE_USERS': False,
+    # 'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
+    # 'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
+    # 'ACTIVATION_URL': '#/activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
     'SERIALIZERS': {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
         'user': 'api.serializers.CustomUserRetrieveSerializer',
@@ -76,7 +76,7 @@ DJOSER = {
     },
     # 'EMAIL_BACKEND': 'django.core.mail.backends.console.EmailBackend',
     'EMAIL_BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
-    'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails'),
+    # 'EMAIL_FILE_PATH': os.path.join(BASE_DIR, 'mails'),
 }
 
 MIDDLEWARE = [
@@ -187,20 +187,23 @@ SPECTACULAR_SETTINGS = {
 # Продуктовый вариант - требует указать почту яндекса
 # и приложить к ней пароль приложения.
 
-EMAIL_HOST = 'smtp.yandex.ru'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_USE_TLS = False
-DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
-# емейл, который будет указан в поле "От кого".
-EMAIL_HOST_USER = 'motivation-system@yandex.ru'
-# ваш емейл на Яндексе. Как правило, идентичен предыдущему пункту
-SERVER_EMAIL = EMAIL_HOST_USER
-EMAIL_ADMIN = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+# EMAIL_HOST = 'smtp.yandex.ru'
+# EMAIL_PORT = 465
+# EMAIL_USE_SSL = True
+# EMAIL_USE_TLS = False
+# DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
+# # емейл, который будет указан в поле "От кого".
+# EMAIL_HOST_USER = 'motivation-system@yandex.ru'
+# # ваш емейл на Яндексе. Как правило, идентичен предыдущему пункту
+# SERVER_EMAIL = EMAIL_HOST_USER
+# EMAIL_ADMIN = EMAIL_HOST_USER
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 # пароль ПРИЛОЖЕНИЯ, который нужно создать в настройках Яндекса заранее.
 #  Это не пароль от вашего емейла!
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'skvmrelay.netangels.ru'
+EMAIL_PORT = 25
+DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
 
 
 CORS_URLS_REGEX = r'^/api/.*$'
