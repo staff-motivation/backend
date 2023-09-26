@@ -1,4 +1,5 @@
 from datetime import date
+from calendar import monthrange
 
 from dateutil.relativedelta import relativedelta  # type: ignore
 from django.db import models
@@ -13,6 +14,7 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
     personal_progress = serializers.SerializerMethodField()
     department_progress = serializers.SerializerMethodField()
     total_reward_points_in_organization = serializers.SerializerMethodField()
+    progress_for_deadline = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -20,6 +22,7 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
             'personal_progress',
             'department_progress',
             'total_reward_points_in_organization',
+            'progress_for_deadline',
         ]
 
     def get_metrics(self, obj):
@@ -28,6 +31,14 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
         end_of_month = today + relativedelta(
             day=31, hour=23, minute=59, second=59, microsecond=999999
         )
+        current_year, current_month = today.year, today.month
+        days_in_month = monthrange(current_year, current_month)[1]
+        is_overdue = Task.objects.filter(
+                is_overdue=True,
+                deadline__month=current_month,
+                deadline__year=current_year,
+                assigned_to=obj.id
+            ).exists()
 
         department_id = obj.department.id if obj.department else None
         personal_reward_points = obj.reward_points_for_current_month
@@ -70,6 +81,11 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
             else None
         )
 
+        if is_overdue is True:
+            progress_for_deadline = 0
+        else:
+            progress_for_deadline = (today.day / days_in_month) * 100
+
         return {
             'personal_progress': round(personal_achievements_percentage, 2),
             'department_progress': round(department_achievements_percentage, 2)
@@ -78,6 +94,7 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
             'total_reward_points_in_organization': total_reward_points_in_organization  # noqa 501
             if total_reward_points_in_organization is not None
             else 0,
+            'progress_for_deadline': round(progress_for_deadline)
         }
 
     def get_personal_progress(self, obj):
@@ -88,6 +105,9 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
 
     def get_total_reward_points_in_organization(self, obj):
         return self.get_metrics(obj)['total_reward_points_in_organization']
+    
+    def get_progress_for_deadline(self, obj):
+        return self.get_metrics(obj)['progress_for_deadline']
 
 
 class NotificationSerializer(serializers.ModelSerializer):
