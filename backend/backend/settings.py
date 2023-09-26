@@ -54,12 +54,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DJOSER = {
-    'HIDE_USERS': False,
+    # 'HIDE_USERS': False,
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
+    # 'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
-    'SEND_CONFIRMATION_EMAIL': True,
+    # 'SEND_CONFIRMATION_EMAIL': True,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
     'SERIALIZERS': {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
@@ -67,6 +67,7 @@ DJOSER = {
         'current_user': 'api.serializers.CustomUserRetrieveSerializer',
         'profile_info': 'api.serializers.UserPublicSerializer',
         'upload_avatar': 'api.serializers.UserImageSerializer',
+        # 'activation': 'djoser.email.ActivationEmail',
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.IsAuthenticated'],
