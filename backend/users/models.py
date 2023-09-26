@@ -83,6 +83,10 @@ class Contact(models.Model):
     contact_type = models.CharField(max_length=50)
     link = models.CharField(max_length=255)
 
+    class Meta:
+        verbose_name = 'Контакт'
+        verbose_name_plural = 'Контакты'
+
     def __str__(self):
         return f'{self.user.first_name} - {self.contact_type}: {self.link}'
 
