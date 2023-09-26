@@ -11,7 +11,7 @@ load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='yours-secret-key')
 
-DEBUG = os.getenv('DEBUG', default=True)
+DEBUG = os.getenv('DEBUG', default='True') == 'True'
 
 ALLOWED_HOSTS = ['185.41.163.109', '127.0.0.1', 'localhost', 'web']
 
@@ -70,8 +70,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-PROD_DB = os.getenv('PROD_DB', default='True')
-if os.getenv('PROD_DB', default=True) is True:
+PROD_DB = os.getenv('PROD_DB') == 'False'
+if PROD_DB:
     DATABASES = {
         'default': {
             'ENGINE': os.getenv(
@@ -143,9 +143,16 @@ MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'skvmrelay.netangels.ru'
+    EMAIL_PORT = 25
 DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
+print(EMAIL_BACKEND)
 
 
 DJOSER = {
@@ -173,11 +180,6 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Documentation for Staff-motivation API built with DRF',
     'VERSION': '1.0.0',
 }
-
-if not DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'skvmrelay.netangels.ru'
-    EMAIL_PORT = 25
 
 
 CORS_URLS_REGEX = r'^/api/.*$'
