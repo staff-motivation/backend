@@ -21,6 +21,7 @@ class Task(models.Model):
         blank=False,
     )
     status = models.CharField(max_length=21, default='created')
+    is_overdue = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title

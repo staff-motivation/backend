@@ -68,7 +68,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             status__in=['created', 'returned_for_revision'],
         )
         for task in overdue_tasks:
-            task.status = 'Просрочена'
+            task.is_overdue = True
             task.save()
 
     @extend_schema(
