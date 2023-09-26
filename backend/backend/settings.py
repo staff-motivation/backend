@@ -152,7 +152,6 @@ else:
     EMAIL_HOST = 'skvmrelay.netangels.ru'
     EMAIL_PORT = 25
 DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
-print(EMAIL_BACKEND)
 
 
 DJOSER = {
