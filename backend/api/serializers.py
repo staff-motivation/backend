@@ -1,5 +1,5 @@
-from datetime import date
 from calendar import monthrange
+from datetime import date
 
 from dateutil.relativedelta import relativedelta  # type: ignore
 from django.db import models
