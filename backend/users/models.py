@@ -61,6 +61,10 @@ class Department(models.Model):
 
 
 class Hardskill(models.Model):
+    """
+    Модель хардскиллов.
+    """
+
     name = models.CharField(
         verbose_name='Хардскилл',
         help_text='Введите профессиоанльный навык/хардскилл',
@@ -77,6 +81,10 @@ class Hardskill(models.Model):
 
 
 class Contact(models.Model):
+    """
+    Модель контактов.
+    """
+
     user = models.ForeignKey(
         'User', on_delete=models.CASCADE, related_name='Contact'
     )
@@ -92,6 +100,16 @@ class Contact(models.Model):
 
 
 class CustomUserManager(BaseUserManager):
+    """
+    Кастомная настройка создания пользователя.
+    В случае создания обычного юзера по умолчанию
+    отключены флаги is_staff/is_superuser/is_active.
+    Также действует обязательная проверка на наличие
+    указанной почты при регистрации. В случае если
+    регистрируется суперпользователь, то выше
+    перечисленные флаги включены.
+    """
+
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
@@ -243,6 +261,10 @@ class User(AbstractUser):
 
 
 class UserContact(models.Model):
+    """
+    Промежуточная модель для пользовательских контаков.
+    """
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_contacts'
     )

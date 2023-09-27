@@ -4,6 +4,10 @@ from users.models import User
 
 
 class Task(models.Model):
+    """
+    Модель задачь.
+    """
+
     title = models.CharField(max_length=200)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -21,6 +25,10 @@ class Task(models.Model):
         blank=False,
     )
     status = models.CharField(max_length=21, default='created')
+
+    class Meta:
+        verbose_name = 'Задачу'
+        verbose_name_plural = 'Задачи'
 
     def __str__(self):
         return self.title
