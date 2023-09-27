@@ -150,7 +150,7 @@ class AchievementAdmin(ImportExportModelAdmin):
     в админ панели.
     """
 
-    list_display = ('get_image', 'name', 'description')
+    list_display = ('get_image', 'name', 'value', 'description')
     search_fields = ('name',)
     resource_classes = [AchievementResource]
 
