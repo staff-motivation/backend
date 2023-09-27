@@ -1,5 +1,6 @@
 from calendar import monthrange
 from datetime import date
+from math import floor
 
 from dateutil.relativedelta import relativedelta  # type: ignore
 from django.db import models
@@ -87,8 +88,8 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
             progress_for_deadline = (today.day / days_in_month) * 100
 
         return {
-            'personal_progress': round(personal_achievements_percentage, 2),
-            'department_progress': round(department_achievements_percentage, 2)
+            'personal_progress': floor(personal_achievements_percentage),
+            'department_progress': floor(department_achievements_percentage)
             if department_achievements_percentage is not None
             else 0,
             'total_reward_points_in_organization': total_reward_points_in_organization  # noqa 501
