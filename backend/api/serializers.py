@@ -40,6 +40,11 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
             deadline__year=current_year,
             assigned_to=obj.id,
         ).exists()
+        tasks_count = Task.objects.filter(
+            deadline__month=current_month,
+            deadline__year=current_year,
+            assigned_to=obj.id,
+        ).count()
 
         department_id = obj.department.id if obj.department else None
         personal_reward_points = obj.reward_points_for_current_month
@@ -82,7 +87,7 @@ class ProgressUserAndDepartmentSerializer(serializers.ModelSerializer):
             else None
         )
 
-        if is_overdue is True:
+        if is_overdue is True or tasks_count == 0:
             progress_for_deadline = 0
         else:
             progress_for_deadline = (today.day / days_in_month) * 100
