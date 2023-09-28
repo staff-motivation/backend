@@ -181,6 +181,7 @@ class CustomUserAdmin(ImportExportModelAdmin):
     add_form = CustomUserCreationForm
     ordering = ['email']
     list_display = (
+        'id',
         'email',
         'is_active',
         'is_superuser',

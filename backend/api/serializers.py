@@ -159,6 +159,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
     class Meta:
         model = User
         fields = (
+            'id',
             'first_name',
             'last_name',
             'birthday',
