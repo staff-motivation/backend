@@ -150,9 +150,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
         read_only=True, default=False
     )
     reward_points = serializers.IntegerField(read_only=True)
-    contacts = (
-        serializers.SerializerMethodField()
-    )  # ContactSerializer(many=True, required=False)
+    contacts = serializers.SerializerMethodField()
     completed_tasks_count = serializers.IntegerField()
     reward_points_for_current_month = serializers.IntegerField()
     remaining_tasks_count = serializers.SerializerMethodField()
