@@ -240,6 +240,7 @@ class CustomUserAdmin(ImportExportModelAdmin):
                     'position',
                     'experience',
                     'department',
+                    'contacts',
                 )
             },
         ),
