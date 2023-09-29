@@ -155,7 +155,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
         read_only=True, default=False
     )
     reward_points = serializers.IntegerField(read_only=True)
-    contacts = ContactSerializer(many=True, required=False)
+    contacts = serializers.SerializerMethodField()
     completed_tasks_count = serializers.IntegerField()
     reward_points_for_current_month = serializers.IntegerField()
     remaining_tasks_count = serializers.SerializerMethodField()
@@ -164,6 +164,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
     class Meta:
         model = User
         fields = (
+            'id',
             'first_name',
             'last_name',
             'birthday',
@@ -180,6 +181,11 @@ class CustomUserRetrieveSerializer(UserSerializer):
             'remaining_tasks_count',
             'total_tasks',
         )
+
+    def get_contacts(self, obj):
+        user = self.context['request'].user
+        queryset = Contact.objects.filter(user_id=user.id)
+        return ContactSerializer(queryset, many=True).data
 
     def get_total_tasks(self, instance):
         today = date.today()
