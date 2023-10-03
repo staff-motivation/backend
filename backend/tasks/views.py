@@ -11,14 +11,20 @@ from rest_framework.response import Response
 from tasks.models import Task
 from users.models import User
 
-from .permissions import IsOrdinaryUser
+from .permissions import IsTeamleader
 from .serializers import TaskSerializer
 
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOrdinaryUser]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsTeamleader()]
+        else:
+            return super(TaskViewSet, self).get_permissions()
 
     @extend_schema(description='Обновление статуса просроченных задач.')
     def update_overdue_tasks(self):
@@ -57,17 +63,6 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     @extend_schema(description='Создание новой задачи тимлидером.')
     def create(self, request):
-        if not request.user.is_teamleader:
-            return Response(
-                {
-                    'error': (
-                        'Доступ запрещен, создание задачи'
-                        ' доступно только Тимлидерам'
-                    )
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
         serializer = TaskSerializer(
             data=request.data, context={'request': request}
         )
@@ -140,19 +135,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     @extend_schema(
         description='Проверка задачи тимлидом и изменение её статуса.'
     )
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['POST'], permission_classes=[IsTeamleader])
     def review_task(self, request, pk=None):
-        if not request.user.is_teamleader:
-            return Response(
-                {
-                    'error': (
-                        'Доступ запрещен, завершение задачи '
-                        'доступно только Тимлидерам'
-                    )
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
         task = self.get_object()
         review_status = request.data.get('status', '')
 

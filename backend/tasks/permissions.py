@@ -10,3 +10,9 @@ class IsOrdinaryUser(permissions.BasePermission):
         ):
             return True
         return request.user.is_teamleader
+
+
+class IsTeamleader(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        return user.is_authenticated and user.is_teamleader
