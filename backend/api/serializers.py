@@ -282,18 +282,6 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         return data
 
 
-class TaskSerializer(serializers.ModelSerializer):
-    team_leader = serializers.HiddenField(
-        default=serializers.CurrentUserDefault()
-    )
-    status = serializers.CharField(default='created')
-    reward_points = serializers.IntegerField(required=True)
-
-    class Meta:
-        model = Task
-        fields = '__all__'
-
-
 class ShortUserProfileSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     reward_points_for_current_month = serializers.IntegerField()
