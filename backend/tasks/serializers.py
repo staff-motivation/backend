@@ -16,6 +16,5 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class TaskReviewSerializer(serializers.Serializer):
     review_status = serializers.ChoiceField(
-        required=True,
-        choices=[Task.APPROVED, Task.RETURNED]
+        required=True, choices=[Task.APPROVED, Task.RETURNED]
     )

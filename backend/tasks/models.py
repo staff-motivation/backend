@@ -8,6 +8,7 @@ class Task(models.Model):
     """
     Модель задачь.
     """
+
     CREATED = 'created'
     RETURNED = 'returned_for_revision'
     SENT = 'sent_for_review'
@@ -38,7 +39,8 @@ class Task(models.Model):
     status = models.CharField(
         max_length=21,
         choices=TASK_STATUSES,
-        default=CREATED,)
+        default=CREATED,
+    )
     is_overdue = models.BooleanField(default=False)
 
     class Meta:

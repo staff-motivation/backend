@@ -36,9 +36,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             task.is_overdue = True
             task.save()
 
-    @extend_schema(
-        description='Получение списка задач.'
-    )
+    @extend_schema(description='Получение списка задач.')
     def list(self, request, *args, **kwargs):
         self.update_overdue_tasks()
         tasks = self.queryset.filter(
@@ -93,7 +91,11 @@ class TaskViewSet(viewsets.ModelViewSet):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
-    @extend_schema(description='Отправка задачи текущего пользователя на проверку тимлидеру.')
+    @extend_schema(
+        description=(
+            'Отправка задачи текущего пользователя на проверку тимлидеру.'
+        )
+    )
     @action(detail=True, methods=['POST'], serializer_class=None)
     def send_for_review(self, request, pk=None):
         task = self.get_object()
@@ -135,10 +137,12 @@ class TaskViewSet(viewsets.ModelViewSet):
     @extend_schema(
         description='Проверка задачи тимлидом и изменение её статуса.'
     )
-    @action(detail=True,
-            methods=['POST'],
-            permission_classes=[IsTeamleader],
-            serializer_class=TaskReviewSerializer)
+    @action(
+        detail=True,
+        methods=['POST'],
+        permission_classes=[IsTeamleader],
+        serializer_class=TaskReviewSerializer,
+    )
     def review_task(self, request, pk=None):
         task = self.get_object()
         if task.status == Task.APPROVED:
@@ -165,26 +169,35 @@ class TaskViewSet(viewsets.ModelViewSet):
 
                     Notification.objects.create(
                         user=task.team_leader,
-                        message=f'Задача "{task.title}" была принята и выполнена',
+                        message=(
+                            f'Задача "{task.title}" была принята и выполнена'
+                        ),
                     )
                     Notification.objects.create(
                         user=task.assigned_to,
-                        message=f'Задача "{task.title}" была принята и выполнена',
+                        message=(
+                            f'Задача "{task.title}" была принята и выполнена'
+                        ),
                     )
                 return Response(
-                    {'message': 'Принята и выполнена'}, status=status.HTTP_200_OK
+                    {'message': 'Принята и выполнена'},
+                    status=status.HTTP_200_OK,
                 )
             elif review_status == Task.RETURNED:
                 task.status = Task.RETURNED
                 task.save()
                 Notification.objects.create(
                     user=task.team_leader,
-                    message=f'Задача "{task.title}" была возвращена на доработку',
+                    message=(
+                        f'Задача "{task.title}" была возвращена на доработку'
+                    ),
                 )
 
                 Notification.objects.create(
                     user=task.assigned_to,
-                    message=f'Задача "{task.title}" была возвращена на доработку',
+                    message=(
+                        f'Задача "{task.title}" была возвращена на доработку'
+                    ),
                 )
 
                 return Response(

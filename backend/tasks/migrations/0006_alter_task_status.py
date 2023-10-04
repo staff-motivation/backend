@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('tasks', '0005_alter_task_options'),
     ]
@@ -13,6 +12,15 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='task',
             name='status',
-            field=models.CharField(choices=[('created', 'Created'), ('returned_for_revision', 'Returned for revision'), ('sent_for_review', 'Sent for review'), ('approved', 'Approved')], default='created', max_length=21),
+            field=models.CharField(
+                choices=[
+                    ('created', 'Created'),
+                    ('returned_for_revision', 'Returned for revision'),
+                    ('sent_for_review', 'Sent for review'),
+                    ('approved', 'Approved'),
+                ],
+                default='created',
+                max_length=21,
+            ),
         ),
     ]
