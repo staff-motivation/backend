@@ -21,7 +21,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
             return [IsTeamleader()]
         else:
             return super().get_permissions()
