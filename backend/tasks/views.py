@@ -18,6 +18,7 @@ from .serializers import TaskReviewSerializer, TaskSerializer
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TaskSerializer
 
     def get_permissions(self):
         if self.action == 'create':
@@ -93,7 +94,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             )
 
     @extend_schema(description='Отправка задачи текущего пользователя на проверку тимлидеру.')
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['POST'], serializer_class=None)
     def send_for_review(self, request, pk=None):
         task = self.get_object()
         user = request.user
@@ -136,7 +137,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     @action(detail=True,
             methods=['POST'],
-            permission_classes=[IsTeamleader])
+            permission_classes=[IsTeamleader],
+            serializer_class=TaskReviewSerializer)
     def review_task(self, request, pk=None):
         task = self.get_object()
         if task.status == Task.APPROVED:
