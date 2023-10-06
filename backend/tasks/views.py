@@ -9,10 +9,9 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from tasks.models import Task
+from tasks.permissions import IsTeamleader
+from tasks.serializers import TaskReviewSerializer, TaskSerializer
 from users.models import User
-
-from .permissions import IsTeamleader
-from .serializers import TaskReviewSerializer, TaskSerializer
 
 
 class TaskViewSet(viewsets.ModelViewSet):
