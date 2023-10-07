@@ -5,15 +5,15 @@ from django.conf import settings
 from django.conf.locale.ru import formats as ru_formats
 from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+TRUE_VALUES = ['1', 'True', 'true', 'YES', 'yes']
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='yours-secret-key')
 
-DEBUG = os.getenv('DEBUG', default='True') == 'True'
-
-ALLOWED_HOSTS = ['31.129.110.130', '127.0.0.1', 'localhost', 'web']
+DEBUG = os.getenv('DEBUG') in TRUE_VALUES
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='*').split(', ')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'tasks.apps.TasksConfig',
     'notifications.apps.NotificationsConfig',
 ]
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,13 +69,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-PROD_DB = os.getenv('PROD_DB') == 'False'
+PROD_DB = os.getenv('PROD_DB') in TRUE_VALUES
 if PROD_DB:
     DATABASES = {
         'default': {
-            'ENGINE': os.getenv(
-                'DB_ENGINE', default='django.db.backends.postgresql'
-            ),
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('DB_NAME', default='postgres'),
             'USER': os.getenv('POSTGRES_USER', default='postgres'),
             'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
@@ -117,7 +114,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MAX_LENGTH_USERNAME = 255
@@ -143,16 +139,18 @@ MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-if DEBUG:
+EMAIL_FILE = os.getenv('EMAIL_FILE', default='True') in TRUE_VALUES
+if EMAIL_FILE:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
     EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
-
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'skvmrelay.netangels.ru'
-    EMAIL_PORT = 25
-DEFAULT_FROM_EMAIL = 'motivation-system@yandex.ru'
-
+    EMAIL_HOST = os.getenv('EMAIL_HOST')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', default=465))
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL') in TRUE_VALUES
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
@@ -179,7 +177,6 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Documentation for Staff-motivation API built with DRF',
     'VERSION': '1.0.0',
 }
-
 
 CORS_URLS_REGEX = r'^/api/.*$'
 CORS_ALLOWED_ORIGINS = [
