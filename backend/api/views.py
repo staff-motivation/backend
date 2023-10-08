@@ -1,3 +1,12 @@
+from api.filters import UserFilter
+from api.permissions import CanEditUserFields, IsOwnerOrReadOnly, IsTeamLeader
+from api.serializers import (
+    CustomUserRetrieveSerializer,
+    NotificationSerializer,
+    ProgressUserAndDepartmentSerializer,
+    ShortUserProfileSerializer,
+    UserImageSerializer,
+)
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -7,16 +16,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from users.models import Achievement, User, UserAchievement
-
-from .filters import UserFilter
-from .permissions import CanEditUserFields, IsOwnerOrReadOnly, IsTeamLeader
-from .serializers import (
-    CustomUserRetrieveSerializer,
-    NotificationSerializer,
-    ProgressUserAndDepartmentSerializer,
-    ShortUserProfileSerializer,
-    UserImageSerializer,
-)
 
 
 @extend_schema(
