@@ -8,6 +8,7 @@ djoser~=2.2.0
 drf-spectacular~=0.26.4
 gunicorn~=21.2.0
 Pillow~=10.0.0
+pre-commit==3.4.0
 psycopg2-binary~=2.9.7
 python-dateutil~=2.8.2
 python-dotenv~=1.0.0

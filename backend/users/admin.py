@@ -5,8 +5,7 @@ from django.utils.translation import gettext as _
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from tasks.models import Task
-
-from .models import Achievement, Contact, Department, Hardskill, User
+from users.models import Achievement, Contact, Department, Hardskill, User
 
 
 class AchievementResource(resources.ModelResource):
