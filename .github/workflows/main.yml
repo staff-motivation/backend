@@ -53,7 +53,7 @@ jobs:
           username: ${{ secrets.USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           source: ".env"
-          target: ${{ secrets.TARGET_SERVER_PATH }}
+          target: "./"
 
   deploy:
     runs-on: ubuntu-latest
