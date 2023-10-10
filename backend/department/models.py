@@ -3,28 +3,29 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Department(models.Model):
-    BACKEND = 'Backend'
-    FRONTEND = 'Frontend'
-    UX_UI = 'UX_UI'
-    QA = 'QA'
-    NONE = 'None'
+    BACKEND = 'backend'
+    FRONTEND = 'frontend'
+    UX_UI = 'ux_ui'
+    QA = 'qa'
+    OTHER = 'other'
     DEPARTMENT_NAMES = (
         (BACKEND, _('Backend')),
         (FRONTEND, _('Frontend')),
         (UX_UI, _('UX_UI')),
         (QA, _('QA')),
-        (NONE, _('None')),
+        (OTHER, _('Other')),
     )
 
     name = models.CharField(
         verbose_name='Подразделение',
         max_length=10,
         choices=DEPARTMENT_NAMES,
-        default=NONE,
+        default=OTHER,
     )
     description = models.TextField(
         verbose_name='Описание',
         help_text='Добавьте описание подразделения',
+        blank=True,
     )
     image = models.ImageField(
         verbose_name='Изображение',
