@@ -1,9 +1,9 @@
+from department.models import Department
 from django.db import IntegrityError
 from django.test import TestCase
 from users.models import (
     Achievement,
     Contact,
-    Department,
     Hardskill,
     Position,
     User,
@@ -91,38 +91,6 @@ class UserModelTest(TestCase):
         user = User.objects.get(id=1)
         self.assertFalse(user.is_admin)
         self.assertTrue(user.is_teamleader)
-
-
-class DepartmentModelTest(TestCase):
-    """
-    Тестирование модели Department.
-    """
-
-    @classmethod
-    def setUpTestData(cls):
-        Department.objects.create(
-            name='Test Department', description='Test description'
-        )
-
-    def test_name_field(self):
-        department = Department.objects.get(id=1)
-        name = department.name
-        self.assertEqual(name, 'Test Department')
-
-    def test_description_field(self):
-        department = Department.objects.get(id=1)
-        description = department.description
-        self.assertEqual(description, 'Test description')
-
-    def test_image_field_blank(self):
-        department = Department.objects.get(id=1)
-        image = department.image
-        self.assertEqual(image, '')
-
-    def test_str_method(self):
-        department = Department.objects.get(id=1)
-        expected_result = 'Test Department'
-        self.assertEqual(str(department), expected_result)
 
 
 class HardskillModelTest(TestCase):

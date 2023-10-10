@@ -1,3 +1,4 @@
+from department.models import Department
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
@@ -21,43 +22,6 @@ class Position(models.TextChoices):
     JUNIOR = 'junior', 'Junior'
     MIDDLE = 'middle', 'Middle'
     SENIOR = 'senior', 'Senior'
-
-
-class DepartmentName(models.TextChoices):
-    """Название подразделения."""
-
-    BACKEND = 'Backend'
-    FRONTEND = 'Frontend'
-    UX_UI = 'UX_UI'
-    QA = 'QA'
-    NONE = 'None'
-
-
-class Department(models.Model):
-    name = models.CharField(
-        verbose_name='Подразделение',
-        max_length=max(len(_[0]) for _ in DepartmentName.choices),
-        choices=DepartmentName.choices,
-        default=DepartmentName.NONE,
-    )
-    description = models.TextField(
-        verbose_name='Описание',
-        help_text='Добавьте описание подразделения',
-    )
-    image = models.ImageField(
-        verbose_name='Изображение',
-        help_text='Загрузите изображение',
-        upload_to='users/department/%Y/%m/%d',
-        blank=True,
-    )
-
-    class Meta:
-        verbose_name = 'Подразделение'
-        verbose_name_plural = 'Подразделения'
-        ordering = ('name',)
-
-    def __str__(self):
-        return str(self.name)
 
 
 class Hardskill(models.Model):
