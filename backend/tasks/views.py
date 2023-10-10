@@ -1,9 +1,10 @@
 import datetime
 
+from department.models import Department
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from notifications.models import Notification
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -14,10 +15,19 @@ from tasks.serializers import TaskReviewSerializer, TaskSerializer
 from users.models import User
 
 
+@extend_schema_view(
+    list=extend_schema(description='Получение списка задач текущего'
+                       ' пользователя или тимлида.'),
+    retrieve=extend_schema(description='Получение задачи по id.'),
+    destroy=extend_schema(description='Удаление задачи по id.'),
+    update=extend_schema(description='Обновление задачи по id.'
+                         ' Меняет объект целиком.'),
+    partial_update=extend_schema(description='Обновление задачи по id.'
+                                 ' Изменяет только переданные поля.'),
+)
 class TaskViewSet(viewsets.ModelViewSet):
-    queryset = Task.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
     serializer_class = TaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_permissions(self):
         if self.action in ['create', 'destroy', 'update', 'partial_update']:
@@ -27,36 +37,13 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     @extend_schema(description='Обновление статуса просроченных задач.')
     def update_overdue_tasks(self):
-        overdue_tasks = self.queryset.filter(
+        overdue_tasks = Task.objects.filter(
             deadline__lt=timezone.now(),
             status__in=[Task.CREATED, Task.RETURNED],
         )
         for task in overdue_tasks:
             task.is_overdue = True
             task.save()
-
-    @extend_schema(description='Получение списка задач.')
-    def list(self, request, *args, **kwargs):
-        self.update_overdue_tasks()
-        tasks = self.queryset.filter(
-            Q(assigned_to=request.user) | Q(team_leader=request.user)
-        )
-        task_data = []
-        for task in tasks:
-            task_data.append(
-                {
-                    'id': task.id,
-                    'title': task.title,
-                    'description': task.description,
-                    'deadline': task.deadline,
-                    'reward_points': task.reward_points,
-                    'status': task.status,
-                    'assigned_to': task.assigned_to.get_full_name(),
-                    'created_by': task.team_leader.get_full_name(),
-                    'created_at': task.created_at,
-                }
-            )
-        return Response({'tasks': task_data})
 
     @extend_schema(description='Создание новой задачи тимлидером.')
     def create(self, request):
@@ -66,7 +53,9 @@ class TaskViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             assigned_user_id = request.data.get('assigned_to')
             if assigned_user_id:
-                task = serializer.save()
+                department, created = Department.objects.get_or_create(
+                    name=request.data.get('department'))
+                task = serializer.save(department=department)
                 assigned_user = User.objects.get(id=assigned_user_id)
                 task.assigned_to = assigned_user
                 task.save()
@@ -218,7 +207,10 @@ class TaskViewSet(viewsets.ModelViewSet):
         Пример запроса с фильтрацией - Просроченные:
         http://example.com/api/tasks/?is_overdue=true
         """
-        queryset = super().get_queryset()
+        self.update_overdue_tasks()
+        queryset = Task.objects.filter(
+            Q(assigned_to=self.request.user) | Q(team_leader=self.request.user)
+        )
         status = self.request.query_params.get('status')
         if status:
             queryset = queryset.filter(status=status)

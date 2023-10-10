@@ -1,5 +1,23 @@
+from department.models import Department
 from rest_framework import serializers
 from tasks.models import Task
+
+
+class ChoiceField(serializers.ChoiceField):
+
+    def to_representation(self, obj):
+        if obj == '':
+            return obj
+        return obj.name
+
+    def to_internal_value(self, data):
+        if data == '':
+            return ''
+
+        for key, val in self._choices.items():
+            if key == data:
+                return key
+        self.fail('invalid_choice', input=data)
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -8,9 +26,11 @@ class TaskSerializer(serializers.ModelSerializer):
     )
     status = serializers.CharField(default='created')
     reward_points = serializers.IntegerField(required=True)
+    department = ChoiceField(choices=Department.DEPARTMENT_NAMES)
 
     class Meta:
         model = Task
+        read_only_fields = ('is_overdue',)
         fields = '__all__'
 
 
