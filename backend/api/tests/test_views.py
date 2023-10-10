@@ -59,6 +59,7 @@ class TaskViewSetTestCase(TestCase):
                 'title': 'Тестовая задача 2',
                 'description': 'Описание 2',
                 'deadline': '2023-12-30 23:59:00.000000',
+                'department': '',
                 'reward_points': 300,
                 'team_leader': 1,
                 'assigned_to': 2,
