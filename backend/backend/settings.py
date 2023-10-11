@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 from django.conf import settings
@@ -70,8 +71,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-PROD_DB = os.getenv('PROD_DB') in TRUE_VALUES
-if PROD_DB:
+PROD_DB = os.getenv('PROD_DB', default='true') in TRUE_VALUES
+if PROD_DB and 'test' not in sys.argv:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -140,7 +141,7 @@ MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-EMAIL_FILE = os.getenv('EMAIL_FILE', default='True') in TRUE_VALUES
+EMAIL_FILE = os.getenv('EMAIL_FILE', default='true') in TRUE_VALUES
 if EMAIL_FILE:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
     EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
