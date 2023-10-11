@@ -1,3 +1,4 @@
+from department.models import Department
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -40,6 +41,13 @@ class Task(models.Model):
         max_length=21,
         choices=TASK_STATUSES,
         default=CREATED,
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        related_name='owned_tasks',
+        null=True,
+        blank=True,
     )
     is_overdue = models.BooleanField(default=False)
 

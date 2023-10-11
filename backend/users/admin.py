@@ -4,9 +4,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from tasks.models import Task
-
-from .models import Achievement, Contact, Department, Hardskill, User
+from users.models import Achievement, Contact, Hardskill, User
 
 
 class AchievementResource(resources.ModelResource):
@@ -16,17 +14,6 @@ class AchievementResource(resources.ModelResource):
 
     class Meta:
         model = Achievement
-        skip_unchanged = True
-        report_skipped = True
-
-
-class DepartmentResource(resources.ModelResource):
-    """
-    Настройки импорта/экспорта для модели Department.
-    """
-
-    class Meta:
-        model = Department
         skip_unchanged = True
         report_skipped = True
 
@@ -64,17 +51,6 @@ class UserResource(resources.ModelResource):
         report_skipped = True
 
 
-class TaskResource(resources.ModelResource):
-    """
-    Настройки импорта/экспорта для модели Task.
-    """
-
-    class Meta:
-        model = Task
-        skip_unchanged = True
-        report_skipped = True
-
-
 class ContactAdmin(ImportExportModelAdmin):
     """
     Настройки отображения модели Contact
@@ -83,28 +59,6 @@ class ContactAdmin(ImportExportModelAdmin):
 
     list_display = ('user', 'contact_type', 'link')
     resource_classes = [ContactResource]
-
-
-class DepartmentAdmin(ImportExportModelAdmin):
-    """
-    Настройки отображения модели Department
-    в админ панели.
-    """
-
-    list_display = ('name', 'description', 'image')
-    resource_classes = [DepartmentResource]
-
-
-class TaskAdmin(ImportExportModelAdmin):
-    """
-    Настройки отображения модели Task
-    в админ панели.
-    """
-
-    list_display = ['id', 'title', 'team_leader', 'deadline', 'status']
-    list_filter = ['status', 'team_leader']
-    search_fields = ['id', 'title', 'description']
-    resource_classes = [TaskResource]
 
 
 class HardskillInline(admin.TabularInline):
@@ -261,8 +215,6 @@ class CustomUserAdmin(ImportExportModelAdmin):
     inlines = [HardskillInline, AchievementInline]
 
 
-admin.site.register(Department, DepartmentAdmin)
-admin.site.register(Task, TaskAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Hardskill, HardskillAdmin)
 admin.site.register(Achievement, AchievementAdmin)

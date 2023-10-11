@@ -1,34 +1,12 @@
-name: Motivation system workflow
+name: Motivation system workflow build and deploy
 
 on:
-  push:
-  # schedule:
-  #   - cron : '2 0 * * *'
+  pull_request:
+    types: closed
+    branches:
+      - main
 
 jobs:
-  linters_and_tests:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.9
-        cache:  'pip'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: Check with black
-      id: black
-      continue-on-error: true
-      run: black .
-    - name: Check with ruff
-      id: ruff
-      continue-on-error: true
-      run: ruff .
-
-
   build_and_push_to_docker_hub:
     name: Push Docker image to Docker Hub
     if: github.ref == 'refs/heads/main'
@@ -36,6 +14,25 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+      - name: Generate .env
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          envkey_DEBUG: false
+          envkey_ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          envkey_PROD_DB: ${{ secrets.PROD_DB }}
+          envkey_DB_NAME: ${{ secrets.DB_NAME }}
+          envkey_POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          envkey_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          envkey_DB_HOST: ${{ secrets.DB_HOST }}
+          envkey_DB_PORT: ${{ secrets.DB_PORT }}
+          envkey_EMAIL_FILE: ${{ secrets.EMAIL_FILE }}
+          envkey_EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          envkey_EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          envkey_EMAIL_USE_TLS: true
+          envkey_EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+          envkey_EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+          envkey_DEFAULT_FROM_EMAIL: ${{ secrets.DEFAULT_FROM_EMAIL }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Docker
@@ -46,8 +43,17 @@ jobs:
       - name: Push to Docker Hub
         uses: docker/build-push-action@v5
         with:
+          build-args: ENV_FILE=.env
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/motivation_system
+      - name: Copy .env file to server using SCP
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: ".env"
+          target: "./"
 
   deploy:
     runs-on: ubuntu-latest

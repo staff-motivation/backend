@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'news.apps.NewsConfig',
     'tasks.apps.TasksConfig',
     'notifications.apps.NotificationsConfig',
+    'department.apps.DepartmentConfig',
 ]
 
 MIDDLEWARE = [
