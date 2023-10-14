@@ -21,14 +21,6 @@ class AchievementSerializer(serializers.ModelSerializer):
         fields = ('name', 'value', 'image', 'description')
 
 
-class AchievementsAddSerializer(serializers.ModelSerializer):
-    achievements = AchievementSerializer(many=True)
-
-    class Meta:
-        model = User
-        fields = ('achievements',)
-
-
 class HardskillsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hardskill
