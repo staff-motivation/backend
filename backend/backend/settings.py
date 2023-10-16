@@ -160,11 +160,11 @@ DJOSER = {
     'SEND_ACTIVATION_EMAIL': False,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
     'SERIALIZERS': {
-        'user_create': 'api.serializers.CustomUserCreateSerializer',
-        'user': 'api.serializers.CustomUserRetrieveSerializer',
-        'current_user': 'api.serializers.CustomUserRetrieveSerializer',
-        'profile_info': 'api.serializers.UserPublicSerializer',
-        'upload_avatar': 'api.serializers.UserImageSerializer',
+        'user_create': 'users.serializers.CustomUserCreateSerializer',
+        'user': 'users.serializers.CustomUserRetrieveSerializer',
+        'current_user': 'users.serializers.CustomUserRetrieveSerializer',
+        'profile_info': 'users.serializers.UserPublicSerializer',
+        'upload_avatar': 'users.serializers.UserImageSerializer',
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.IsAuthenticated'],
