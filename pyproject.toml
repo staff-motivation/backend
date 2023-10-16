@@ -7,6 +7,13 @@ skip-magic-trailing-comma = false
 extend-exclude = 'backend/backend/settings.py'
 
 [tool.isort]
+multi_line_output=3
+lines_between_types = 1
+group_by_package = true
+sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']
+known_first_party = [
+    'api', 'users', 'tasks', 'notifications', 'news', 'department', 'backend'
+]
 profile = 'black'
 
 [tool.mypy]

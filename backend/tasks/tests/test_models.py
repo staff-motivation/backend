@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.test import TestCase
+
 from tasks.models import Task
 from users.models import Position, User, UserRole
 

@@ -1,10 +1,11 @@
+from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from rest_framework.routers import DefaultRouter
+
 from api.views import (
     ProgressUserAndDepartmentViewSet,
     UserNotificationsViewSet,
 )
-from django.urls import include, path
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from rest_framework.routers import DefaultRouter
 from tasks.views import TaskViewSet
 from users.views import CustomDjUserViewSet, ShortUserProfileViewSet
 

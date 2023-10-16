@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('department', '0002_alter_department_name'),
     ]
@@ -13,6 +12,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='department',
             name='description',
-            field=models.TextField(blank=True, help_text='Добавьте описание подразделения', verbose_name='Описание'),
+            field=models.TextField(
+                blank=True,
+                help_text='Добавьте описание подразделения',
+                verbose_name='Описание',
+            ),
         ),
     ]

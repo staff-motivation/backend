@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from news.models import Comment, News
 from users.models import Position, User, UserRole
 

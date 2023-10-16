@@ -1,14 +1,15 @@
 import datetime
 
-from department.models import Department
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from notifications.models import Notification
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from department.models import Department
+from notifications.models import Notification
 from tasks.models import Task
 from tasks.permissions import IsTeamleader
 from tasks.serializers import TaskReviewSerializer, TaskSerializer
@@ -16,14 +17,19 @@ from users.models import User
 
 
 @extend_schema_view(
-    list=extend_schema(description='Получение списка задач текущего'
-                       ' пользователя или тимлида.'),
+    list=extend_schema(
+        description='Получение списка задач текущего'
+        ' пользователя или тимлида.'
+    ),
     retrieve=extend_schema(description='Получение задачи по id.'),
     destroy=extend_schema(description='Удаление задачи по id.'),
-    update=extend_schema(description='Обновление задачи по id.'
-                         ' Меняет объект целиком.'),
-    partial_update=extend_schema(description='Обновление задачи по id.'
-                                 ' Изменяет только переданные поля.'),
+    update=extend_schema(
+        description='Обновление задачи по id.' ' Меняет объект целиком.'
+    ),
+    partial_update=extend_schema(
+        description='Обновление задачи по id.'
+        ' Изменяет только переданные поля.'
+    ),
 )
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
@@ -54,7 +60,8 @@ class TaskViewSet(viewsets.ModelViewSet):
             assigned_user_id = request.data.get('assigned_to')
             if assigned_user_id:
                 department, created = Department.objects.get_or_create(
-                    name=request.data.get('department'))
+                    name=request.data.get('department')
+                )
                 task = serializer.save(department=department)
                 assigned_user = User.objects.get(id=assigned_user_id)
                 task.assigned_to = assigned_user

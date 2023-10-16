@@ -1,10 +1,10 @@
-from department.models import Department
 from rest_framework import serializers
+
+from department.models import Department
 from tasks.models import Task
 
 
 class ChoiceField(serializers.ChoiceField):
-
     def to_representation(self, obj):
         if obj == '':
             return obj
@@ -14,7 +14,7 @@ class ChoiceField(serializers.ChoiceField):
         if data == '':
             return ''
 
-        for key, val in self._choices.items():
+        for key, _val in self._choices.items():
             if key == data:
                 return key
         self.fail('invalid_choice', input=data)

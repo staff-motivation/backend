@@ -1,11 +1,12 @@
+from drf_spectacular.utils import extend_schema
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+
 from api.serializers import (
     NotificationSerializer,
     ProgressUserAndDepartmentSerializer,
 )
-from drf_spectacular.utils import extend_schema
 from notifications.models import Notification
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
 from users.models import User
 
 

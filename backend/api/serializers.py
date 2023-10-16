@@ -4,8 +4,9 @@ from math import floor
 
 from dateutil.relativedelta import relativedelta  # type: ignore
 from django.db import models
-from notifications.models import Notification
 from rest_framework import serializers
+
+from notifications.models import Notification
 from tasks.models import Task
 from users.models import User
 

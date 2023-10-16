@@ -5,6 +5,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+
 from users.filters import UserFilter
 from users.models import Achievement, User, UserAchievement
 from users.permissions import (
@@ -33,15 +34,19 @@ from users.serializers import (
     create=extend_schema(description='Создание нового пользователя.'),
     retrieve=extend_schema(description='Получение пользователя по id.'),
     destroy=extend_schema(description='Удаление пользователя по id.'),
-    update=extend_schema(description='Обновление пользователя по id.'
-                         ' Меняет объект целиком.'),
-    partial_update=extend_schema(description='Обновление пользователя по id.'
-                                 ' Изменяет только переданные поля.'),
+    update=extend_schema(
+        description='Обновление пользователя по id.' ' Меняет объект целиком.'
+    ),
+    partial_update=extend_schema(
+        description='Обновление пользователя по id.'
+        ' Изменяет только переданные поля.'
+    ),
 )
 class CustomDjUserViewSet(UserViewSet):
     """
     Overriding djoser's Users view
     """
+
     serializer_class = CustomUserRetrieveSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = UserFilter
@@ -50,8 +55,12 @@ class CustomDjUserViewSet(UserViewSet):
         if self.action == 'create':
             return [IsAnonymous()]
         if self.action in [
-                'retrieve', 'list', 'update', 'partial_update',
-                'add_achievements']:
+            'retrieve',
+            'list',
+            'update',
+            'partial_update',
+            'add_achievements',
+        ]:
             return [IsTeamLeader()]
         if self.action == 'destroy':
             return [IsAdminUser()]
@@ -64,7 +73,7 @@ class CustomDjUserViewSet(UserViewSet):
     def get_queryset(self):
         return User.objects.all()
 
-    @action(["get"], detail=False)
+    @action(['get'], detail=False)
     def me(self, request, *args, **kwargs):
         """Получить информацию о себе."""
         self.get_object = self.get_instance
