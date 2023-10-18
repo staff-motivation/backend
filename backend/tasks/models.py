@@ -1,7 +1,8 @@
-from department.models import Department
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+from department.models import Department
 from users.models import User
 
 

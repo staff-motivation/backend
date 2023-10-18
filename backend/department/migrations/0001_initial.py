@@ -4,20 +4,54 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
             name='Department',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(choices=[('Backend', 'Backend'), ('Frontend', 'Frontend'), ('UX_UI', 'UX_UI'), ('QA', 'QA'), ('None', 'None')], default='None', max_length=10, verbose_name='Подразделение')),
-                ('description', models.TextField(help_text='Добавьте описание подразделения', verbose_name='Описание')),
-                ('image', models.ImageField(blank=True, help_text='Загрузите изображение', upload_to='users/department/%Y/%m/%d', verbose_name='Изображение')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
+                (
+                    'name',
+                    models.CharField(
+                        choices=[
+                            ('Backend', 'Backend'),
+                            ('Frontend', 'Frontend'),
+                            ('UX_UI', 'UX_UI'),
+                            ('QA', 'QA'),
+                            ('None', 'None'),
+                        ],
+                        default='None',
+                        max_length=10,
+                        verbose_name='Подразделение',
+                    ),
+                ),
+                (
+                    'description',
+                    models.TextField(
+                        help_text='Добавьте описание подразделения',
+                        verbose_name='Описание',
+                    ),
+                ),
+                (
+                    'image',
+                    models.ImageField(
+                        blank=True,
+                        help_text='Загрузите изображение',
+                        upload_to='users/department/%Y/%m/%d',
+                        verbose_name='Изображение',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Подразделение',

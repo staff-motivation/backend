@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from notifications.models import Notification
 from users.models import Position, User, UserRole
 

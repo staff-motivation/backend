@@ -1,4 +1,3 @@
-from department.models import Department
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
@@ -6,6 +5,7 @@ from django.db.models import UniqueConstraint
 from rest_framework import serializers
 
 from backend.settings import MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME
+from department.models import Department
 
 
 class UserRole(models.TextChoices):

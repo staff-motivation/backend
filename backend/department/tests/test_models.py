@@ -1,5 +1,6 @@
-from department.models import Department
 from django.test import TestCase
+
+from department.models import Department
 
 
 class DepartmentModelTest(TestCase):

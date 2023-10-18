@@ -3,6 +3,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta  # type: ignore
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
+
 from tasks.models import Task
 from users.models import Achievement, Contact, Hardskill, User
 

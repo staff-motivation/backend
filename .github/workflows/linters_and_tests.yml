@@ -21,8 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install black~=23.9.1 ruff~=0.0.292
+          pip install -r requirements_dev.txt
       - name: Check with black
         id: black
         continue-on-error: true

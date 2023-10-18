@@ -1,6 +1,7 @@
-from department.models import Department
 from django.db import IntegrityError
 from django.test import TestCase
+
+from department.models import Department
 from users.models import (
     Achievement,
     Contact,
