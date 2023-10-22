@@ -79,6 +79,18 @@ class CustomDjUserViewSet(UserViewSet):
         self.get_object = self.get_instance
         return self.retrieve(request, *args, **kwargs)
 
+    def set_username(self, request, *args, **kwargs):
+        pass
+
+    def reset_username(self, request, *args, **kwargs):
+        pass
+
+    def reset_username_confirm(self, request, *args, **kwargs):
+        pass
+
+    def set_password(self, request, *args, **kwargs):
+        pass
+
     @action(detail=True, methods=['post'])
     def upload_image(self, request, pk=None):
         """Загрузка изображения для профиля пользователя."""
