@@ -12,7 +12,8 @@ from department.models import Department
 from notifications.models import Notification
 from tasks.models import Task
 from tasks.permissions import IsTeamleader
-from tasks.serializers import TaskReviewSerializer, TaskSerializer
+from tasks.serializers import (TaskCreateSerializer, TaskReviewSerializer,
+                               TaskSerializer)
 from users.models import User
 
 
@@ -53,16 +54,16 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     @extend_schema(description='Создание новой задачи тимлидером.')
     def create(self, request):
-        serializer = TaskSerializer(
+        serializer = TaskCreateSerializer(
             data=request.data, context={'request': request}
         )
         if serializer.is_valid():
             assigned_user_id = request.data.get('assigned_to')
             if assigned_user_id:
-                department, created = Department.objects.get_or_create(
+                department = Department.objects.get_or_create(
                     name=request.data.get('department')
                 )
-                task = serializer.save(department=department)
+                task = serializer.save(department=department[0])
                 assigned_user = User.objects.get(id=assigned_user_id)
                 task.assigned_to = assigned_user
                 task.save()
