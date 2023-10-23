@@ -176,9 +176,11 @@ class ShortUserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            'id',
             'first_name',
             'last_name',
             'image',
+            'role',
             'reward_points',
             'rating',
             'department',
