@@ -47,8 +47,9 @@ class TaskCreateSerializer(TaskSerializer):
                 {'deadline': 'Дедлайн не может быть в прощедшей дате.'}
             )
         if not User.objects.filter(
-            department__name=department
-                ).filter(id=user.id):
+            department__name=department,
+            id=user.id
+        ).exists():
             raise serializers.ValidationError(
                 {'department': 'Такого пользователя нет в этом департаменте.'}
             )

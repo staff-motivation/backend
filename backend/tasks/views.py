@@ -60,10 +60,10 @@ class TaskViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             assigned_user_id = request.data.get('assigned_to')
             if assigned_user_id:
-                department = Department.objects.get_or_create(
+                department, _ = Department.objects.get_or_create(
                     name=request.data.get('department')
                 )
-                task = serializer.save(department=department[0])
+                task = serializer.save(department=department)
                 assigned_user = User.objects.get(id=assigned_user_id)
                 task.assigned_to = assigned_user
                 task.save()
