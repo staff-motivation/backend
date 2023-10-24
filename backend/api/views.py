@@ -3,18 +3,27 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from api.serializers import NotificationSerializer
 from notifications.models import Notification
 from tasks.models import Task
 
 
-class ProgressUserAndDepartmentAPI(APIView):
+class ProgressUserAndDepartmentAPI(GenericAPIView):
     """API для получения прогресса пользователя и его департамента за месяц.
-    Значение в процентах от всех выполненных задач за месяц."""
+    Значение в процентах от всех выполненных задач за месяц.
+
+    Пример ответа:
+
+    {
+        'personal_progress': user_percentage,
+        'department_progress': dep_percentage
+    }
+
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
