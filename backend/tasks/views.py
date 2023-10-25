@@ -53,11 +53,12 @@ class TaskViewSet(viewsets.ModelViewSet):
             task.is_overdue = True
             task.save()
 
-    @extend_schema(description='Создание новой задачи тимлидером.'
-                   f'\n{status.HTTP_400_BAD_REQUEST} - '
-                   'Если указать дедлайн прошедшей датой '
-                   f'\n{status.HTTP_400_BAD_REQUEST} - '
-                   'Eсли указанного сотрудника нет в указанном департаменте')
+    @extend_schema(description='Создание новой задачи тимлидером. '
+                   'Возможные ошибки: '
+                   '400: '
+                   'Если указать дедлайн прошедшей датой. '
+                   '400: '
+                   'Eсли указанного сотрудника нет в указанном департаменте.')
     def create(self, request):
         serializer = TaskCreateSerializer(
             data=request.data, context={'request': request}
