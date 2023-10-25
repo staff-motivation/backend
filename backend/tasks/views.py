@@ -21,6 +21,7 @@ from users.models import User
     list=extend_schema(
         description='Получение списка задач текущего'
         ' пользователя или тимлида.'
+        'Упорядочено по дате создания(сначала новые).'
     ),
     retrieve=extend_schema(description='Получение задачи по id.'),
     destroy=extend_schema(description='Удаление задачи по id.'),
@@ -52,7 +53,11 @@ class TaskViewSet(viewsets.ModelViewSet):
             task.is_overdue = True
             task.save()
 
-    @extend_schema(description='Создание новой задачи тимлидером.')
+    @extend_schema(description='Создание новой задачи тимлидером.'
+                   f'\n{status.HTTP_400_BAD_REQUEST} - '
+                   'Если указать дедлайн прошедшей датой '
+                   f'\n{status.HTTP_400_BAD_REQUEST} - '
+                   'Eсли указанного сотрудника нет в указанном департаменте')
     def create(self, request):
         serializer = TaskCreateSerializer(
             data=request.data, context={'request': request}
