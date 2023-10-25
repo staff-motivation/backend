@@ -4,6 +4,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from department.models import Department
 from tasks.models import Task
 from users.models import Position, User, UserRole
 
@@ -177,20 +178,24 @@ class CustomUserViewSetTestCase(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.create(
-            email='test@mail.ru',
-            first_name='User',
-            last_name='Userov',
+        self.client2 = APIClient()
+        self.team_leader = User.objects.create(
+            email='team@mail.ru',
+            first_name='Lid',
+            last_name='Lidov',
             password='password',
-            role=UserRole.USER,
-            position=Position.JUNIOR,
+            role=UserRole.TEAMLEADER,
+            position=Position.SENIOR,
             experience=1,
             reward_points=0,
-            is_staff=False,
+            is_staff=True,
             is_active=True,
         )
+        self.dep = Department.objects.create(
+            name='TestDep', description='Department description'
+        )
         self.user1 = User.objects.create(
-            email='test1@mail.ru',
+            email='user1@mail.ru',
             first_name='User1',
             last_name='Userov1',
             password='password',
@@ -202,19 +207,20 @@ class CustomUserViewSetTestCase(TestCase):
             is_active=True,
         )
         self.user2 = User.objects.create(
-            email='test2@mail.ru',
+            email='user2@mail.ru',
             first_name='User2',
             last_name='Userov2',
             password='password',
             role=UserRole.ADMIN,
             position=Position.MIDDLE,
             experience=1,
+            department=self.dep,
             reward_points=0,
             is_staff=False,
             is_active=True,
         )
         self.user3 = User.objects.create(
-            email='test3@mail.ru',
+            email='user3@mail.ru',
             first_name='User3',
             last_name='Userov3',
             password='password',
@@ -225,6 +231,74 @@ class CustomUserViewSetTestCase(TestCase):
             is_staff=False,
             is_active=True,
         )
+        self.task1 = Task.objects.create(
+            title='Тестовая задача 1',
+            description='Описание 1',
+            deadline=datetime.now(),
+            reward_points=50,
+            team_leader=self.team_leader,
+            assigned_to=self.user1,
+            status=Task.CREATED,
+        )
+        self.task2 = Task.objects.create(
+            title='Тестовая задача 2',
+            description='Описание 2',
+            deadline=datetime.now(),
+            reward_points=50,
+            team_leader=self.team_leader,
+            assigned_to=self.user2,
+            department=self.dep,
+            status=Task.CREATED,
+        )
+
+    def test_progress_available(self):
+        """
+        АПИ получения прогресса доступно.
+        """
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get('/api/users/progress/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_progress_zero_fields(self):
+        """
+        При отсутсвии выполненных задач за месяц в ответ нули.
+        """
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get('/api/users/progress/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, 'personal_progress')
+        self.assertContains(response, 'department_progress')
+        self.assertEqual(response.data['personal_progress'], 0)
+        self.assertEqual(response.data['department_progress'], 0)
+
+    def test_progress_calculate(self):
+        """
+        Проверка правильности подсчета прогресса.
+        """
+        self.task1.status = Task.APPROVED
+        self.task1.save()
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get('/api/users/progress/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, 'personal_progress')
+        self.assertContains(response, 'department_progress')
+        self.assertEqual(response.data['personal_progress'], 100)
+        self.assertEqual(response.data['department_progress'], 0)
+        self.task2.status = Task.APPROVED
+        self.task2.save()
+        response = self.client.get('/api/users/progress/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, 'personal_progress')
+        self.assertContains(response, 'department_progress')
+        self.assertEqual(response.data['personal_progress'], 50)
+        self.assertEqual(response.data['department_progress'], 0)
+        self.client2.force_authenticate(user=self.user2)
+        response = self.client2.get('/api/users/progress/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, 'personal_progress')
+        self.assertContains(response, 'department_progress')
+        self.assertEqual(response.data['personal_progress'], 50)
+        self.assertEqual(response.data['department_progress'], 50)
 
     # def test_filter_users_by_first_name(self):
     #     """

@@ -2,7 +2,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 
-from api.views import ProgressUserAndDepartmentAPI, UserNotificationsViewSet
+from api.views import UserNotificationsViewSet
 from tasks.views import TaskViewSet
 from users.views import CustomDjUserViewSet, ShortUserProfileViewSet
 
@@ -18,9 +18,6 @@ app_name = 'api'
 urlpatterns = [
     path('', include(router.urls)),
     path('', include('djoser.urls.authtoken')),
-    path('progress/',
-         ProgressUserAndDepartmentAPI.as_view(),
-         name='progress'),
     path(
         'curent_user_info/',
         ShortUserProfileViewSet.as_view({'get': 'list'}),

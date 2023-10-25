@@ -34,6 +34,11 @@ class UserImageSerializer(serializers.ModelSerializer):
         fields = ('image',)
 
 
+class ProgressSerializer(serializers.Serializer):
+    personal_progress = serializers.IntegerField()
+    department_progress = serializers.IntegerField()
+
+
 class CustomUserRetrieveSerializer(UserSerializer):
     hardskills = HardskillsSerializer(many=True, required=False)
     achievements = AchievementSerializer(many=True, required=False)
