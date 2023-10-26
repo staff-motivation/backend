@@ -2,10 +2,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 
-from api.views import (
-    ProgressUserAndDepartmentViewSet,
-    UserNotificationsViewSet,
-)
+from api.views import UserNotificationsViewSet
 from tasks.views import TaskViewSet
 from users.views import CustomDjUserViewSet, ShortUserProfileViewSet
 
@@ -14,11 +11,6 @@ router.register(r'users', CustomDjUserViewSet, basename='users')
 router.register(r'tasks', TaskViewSet, basename='tasks')
 router.register(
     r'notifications', UserNotificationsViewSet, basename='user-notifications'
-)
-router.register(
-    r'progress/users',
-    ProgressUserAndDepartmentViewSet,
-    basename='achievements-users',
 )
 
 app_name = 'api'

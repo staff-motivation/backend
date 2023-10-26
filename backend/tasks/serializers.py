@@ -1,7 +1,9 @@
 from rest_framework import serializers
+from datetime import datetime
 
 from department.models import Department
 from tasks.models import Task
+from users.models import User
 
 
 class ChoiceField(serializers.ChoiceField):
@@ -32,6 +34,26 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         read_only_fields = ('is_overdue',)
         fields = '__all__'
+
+
+class TaskCreateSerializer(TaskSerializer):
+    """[POST] Создание новой задачи."""
+    def validate(self, obj):
+        department = obj.get('department')
+        user = obj.get('assigned_to')
+        deadline = obj.get('deadline')
+        if deadline < datetime.now(deadline.tzinfo):
+            raise serializers.ValidationError(
+                {'deadline': 'Дедлайн не может быть в прощедшей дате.'}
+            )
+        if not User.objects.filter(
+            department__name=department,
+            id=user.id
+        ).exists():
+            raise serializers.ValidationError(
+                {'department': 'Такого пользователя нет в этом департаменте.'}
+            )
+        return obj
 
 
 class TaskReviewSerializer(serializers.Serializer):

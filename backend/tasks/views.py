@@ -12,7 +12,8 @@ from department.models import Department
 from notifications.models import Notification
 from tasks.models import Task
 from tasks.permissions import IsTeamleader
-from tasks.serializers import TaskReviewSerializer, TaskSerializer
+from tasks.serializers import (TaskCreateSerializer, TaskReviewSerializer,
+                               TaskSerializer)
 from users.models import User
 
 
@@ -20,6 +21,7 @@ from users.models import User
     list=extend_schema(
         description='Получение списка задач текущего'
         ' пользователя или тимлида.'
+        'Упорядочено по дате создания(сначала новые).'
     ),
     retrieve=extend_schema(description='Получение задачи по id.'),
     destroy=extend_schema(description='Удаление задачи по id.'),
@@ -51,15 +53,20 @@ class TaskViewSet(viewsets.ModelViewSet):
             task.is_overdue = True
             task.save()
 
-    @extend_schema(description='Создание новой задачи тимлидером.')
+    @extend_schema(description='Создание новой задачи тимлидером. '
+                   'Возможные ошибки: '
+                   '400: '
+                   'Если указать дедлайн прошедшей датой. '
+                   '400: '
+                   'Eсли указанного сотрудника нет в указанном департаменте.')
     def create(self, request):
-        serializer = TaskSerializer(
+        serializer = TaskCreateSerializer(
             data=request.data, context={'request': request}
         )
         if serializer.is_valid():
             assigned_user_id = request.data.get('assigned_to')
             if assigned_user_id:
-                department, created = Department.objects.get_or_create(
+                department, _ = Department.objects.get_or_create(
                     name=request.data.get('department')
                 )
                 task = serializer.save(department=department)

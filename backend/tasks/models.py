@@ -53,6 +53,7 @@ class Task(models.Model):
     is_overdue = models.BooleanField(default=False)
 
     class Meta:
+        ordering = ['-created_at']
         verbose_name = 'Задачу'
         verbose_name_plural = 'Задачи'
 
