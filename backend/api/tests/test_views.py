@@ -17,9 +17,7 @@ class TaskViewSetTestCase(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.department = Department.objects.create(
-            name='backend'
-        )
+        self.department = Department.objects.create(name='backend')
         self.team_leader = User.objects.create(
             email='team@mail.ru',
             first_name='Lid',
@@ -43,7 +41,7 @@ class TaskViewSetTestCase(TestCase):
             reward_points=0,
             is_staff=False,
             is_active=True,
-            department=self.department
+            department=self.department,
         )
         self.task = self.task = Task.objects.create(
             title='Тестовая задача 1',

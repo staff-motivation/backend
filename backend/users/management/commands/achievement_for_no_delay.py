@@ -20,9 +20,7 @@ class Command(BaseCommand):
             name='Соблюдение дедлайна', value=30
         )
         for user in all_users:
-            UserAchievement.objects.create(
-                user=user, achievement=achievement
-            )
+            UserAchievement.objects.create(user=user, achievement=achievement)
             user.reward_points += achievement[0].value
             user.reward_points_for_current_month += achievement[0].value
             user.save()
