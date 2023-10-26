@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -16,6 +17,9 @@ class TaskViewSetTestCase(TestCase):
 
     def setUp(self):
         self.client = APIClient()
+        self.department = Department.objects.create(
+            name='backend'
+        )
         self.team_leader = User.objects.create(
             email='team@mail.ru',
             first_name='Lid',
@@ -39,6 +43,7 @@ class TaskViewSetTestCase(TestCase):
             reward_points=0,
             is_staff=False,
             is_active=True,
+            department=self.department
         )
         self.task = self.task = Task.objects.create(
             title='Тестовая задача 1',
@@ -60,8 +65,8 @@ class TaskViewSetTestCase(TestCase):
             {
                 'title': 'Тестовая задача 2',
                 'description': 'Описание 2',
-                'deadline': '2023-12-30 23:59:00.000000',
-                'department': '',
+                'deadline': timezone.now() + timedelta(hours=20),
+                'department': 'backend',
                 'reward_points': 300,
                 'team_leader': 1,
                 'assigned_to': 2,
