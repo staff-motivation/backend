@@ -1,3 +1,6 @@
+from datetime import date
+
+from dateutil.relativedelta import relativedelta
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -6,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
+from tasks.models import Task
 from users.filters import UserFilter
 from users.models import Achievement, User, UserAchievement
 from users.permissions import (
@@ -16,6 +20,7 @@ from users.permissions import (
 )
 from users.serializers import (
     CustomUserRetrieveSerializer,
+    ProgressSerializer,
     ShortUserProfileSerializer,
     UserImageSerializer,
 )
@@ -64,7 +69,7 @@ class CustomDjUserViewSet(UserViewSet):
             return [IsTeamLeader()]
         if self.action == 'destroy':
             return [IsAdminUser()]
-        if self.action == 'me':
+        if self.action in ['me', 'progress']:
             return [IsAuthenticated()]
         if self.action in ['delete_image', 'upload_image']:
             return [IsOwnerOrTeamleader]
@@ -73,7 +78,7 @@ class CustomDjUserViewSet(UserViewSet):
     def get_queryset(self):
         return User.objects.all()
 
-    @action(['get'], detail=False)
+    @action(methods=['get'], detail=False)
     def me(self, request, *args, **kwargs):
         """Получить информацию о себе."""
         self.get_object = self.get_instance
@@ -90,6 +95,56 @@ class CustomDjUserViewSet(UserViewSet):
 
     def set_password(self, request, *args, **kwargs):
         pass
+
+    @action(methods=['get'], detail=False, serializer_class=ProgressSerializer)
+    def progress(self, request):
+        """
+        Получение прогресса пользователя и его департамента за месяц.
+        Значение в процентах от всех выполненных задач за месяц.
+        """
+        user = request.user
+        today = date.today()
+        start_of_month = today.replace(day=1)
+        next_month = start_of_month + relativedelta(months=1)
+
+        user_percentage = 0
+        dep_percentage = 0
+
+        total_approved_tasks_count = Task.objects.filter(
+            deadline__gte=start_of_month,
+            deadline__lt=next_month,
+            status=Task.APPROVED
+        ).count()
+
+        if total_approved_tasks_count > 0:
+            user_approved_tasks_count = Task.objects.filter(
+                deadline__gte=start_of_month,
+                deadline__lt=next_month,
+                assigned_to=user.id,
+                status=Task.APPROVED
+            ).count()
+            user_percentage = round(
+                100 * (user_approved_tasks_count / total_approved_tasks_count))
+
+            department = user.department
+            if department is not None:
+                dep_approved_tasks_count = Task.objects.filter(
+                    deadline__gte=start_of_month,
+                    deadline__lt=next_month,
+                    status=Task.APPROVED,
+                    department=department
+                ).count()
+                dep_percentage = round(
+                    100 * (dep_approved_tasks_count /
+                           total_approved_tasks_count))
+
+        data = {
+            'personal_progress': user_percentage,
+            'department_progress': dep_percentage,
+        }
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid()
+        return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def upload_image(self, request, pk=None):
