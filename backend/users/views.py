@@ -3,17 +3,12 @@ from djoser.views import UserViewSet
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from users.filters import UserFilter
 from users.models import Achievement, User, UserAchievement
-from users.permissions import (
-    IsAnonymous,
-    IsAuthenticated,
-    IsOwnerOrTeamleader,
-    IsTeamLeader,
-)
+from users.permissions import IsAnonymous, IsOwnerOrTeamleader, IsTeamLeader
 from users.serializers import (
     CustomUserRetrieveSerializer,
     ShortUserProfileSerializer,
@@ -21,25 +16,26 @@ from users.serializers import (
 )
 
 
+@extend_schema(tags=['Users'])
 @extend_schema_view(
     list=extend_schema(
-        description='Получение списка пользователей.\n'
-        '\nФильтрация по роли: /api/users/?role=admin\n'
-        '\nФильтрация по должности: /api/users/?position=senior\n'
-        '\nФильтрация по подразделению: /api/users/?department=Backend\n'
-        '\nПоиск по email: /api/users/?email=user@example.com\n'
-        '\nПоиск по имени: /api/users/?first_name=John\n'
-        '\nПоиск по фамилии: /api/users/?last_name=Doe\n'
+        summary='Получение списка пользователей',
+        description=(
+            'Фильтрация по роли (role), по должности (position), по '
+            'подразделению (department).\n\nПоиск по email, по имени '
+            '(first_name), по фамилии (last_name)'
+        ),
     ),
-    create=extend_schema(description='Создание нового пользователя.'),
-    retrieve=extend_schema(description='Получение пользователя по id.'),
-    destroy=extend_schema(description='Удаление пользователя по id.'),
+    create=extend_schema(summary='Создание нового пользователя.'),
+    retrieve=extend_schema(summary='Получение пользователя по id.'),
+    destroy=extend_schema(summary='Удаление пользователя по id.'),
     update=extend_schema(
-        description='Обновление пользователя по id.' ' Меняет объект целиком.'
+        summary='Обновление пользователя по id.',
+        description='Меняет объект целиком.',
     ),
     partial_update=extend_schema(
-        description='Обновление пользователя по id.'
-        ' Изменяет только переданные поля.'
+        summary='Обновление пользователя по id.',
+        description='Изменяет только переданные поля.',
     ),
 )
 class CustomDjUserViewSet(UserViewSet):
