@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('tasks', '0007_task_department'),
     ]
@@ -12,6 +11,10 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='task',
-            options={'ordering': ['-created_at'], 'verbose_name': 'Задачу', 'verbose_name_plural': 'Задачи'},
+            options={
+                'ordering': ['-created_at'],
+                'verbose_name': 'Задачу',
+                'verbose_name_plural': 'Задачи',
+            },
         ),
     ]
