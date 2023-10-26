@@ -24,11 +24,11 @@ jobs:
           pip install -r requirements_dev.txt
       - name: Check with black
         id: black
-        continue-on-error: true
+        # continue-on-error: true
         run: black .
       - name: Check with ruff
         id: ruff
-        continue-on-error: true
+        # continue-on-error: true
         run: ruff .
       - name: Test with django tests
         run: python ./backend/manage.py test ./backend/
