@@ -1,6 +1,6 @@
 from datetime import date
 
-from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import relativedelta  # type: ignore
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -17,7 +17,7 @@ from users.serializers import (
     CustomUserRetrieveSerializer,
     ProgressSerializer,
     ShortUserProfileSerializer,
-    UserImageSerializer,
+    UploadUserImageSerializer,
 )
 
 
@@ -109,7 +109,7 @@ class CustomDjUserViewSet(UserViewSet):
         total_approved_tasks_count = Task.objects.filter(
             deadline__gte=start_of_month,
             deadline__lt=next_month,
-            status=Task.APPROVED
+            status=Task.APPROVED,
         ).count()
 
         if total_approved_tasks_count > 0:
@@ -117,10 +117,11 @@ class CustomDjUserViewSet(UserViewSet):
                 deadline__gte=start_of_month,
                 deadline__lt=next_month,
                 assigned_to=user.id,
-                status=Task.APPROVED
+                status=Task.APPROVED,
             ).count()
             user_percentage = round(
-                100 * (user_approved_tasks_count / total_approved_tasks_count))
+                100 * (user_approved_tasks_count / total_approved_tasks_count)
+            )
 
             department = user.department
             if department is not None:
@@ -128,11 +129,12 @@ class CustomDjUserViewSet(UserViewSet):
                     deadline__gte=start_of_month,
                     deadline__lt=next_month,
                     status=Task.APPROVED,
-                    department=department
+                    department=department,
                 ).count()
                 dep_percentage = round(
-                    100 * (dep_approved_tasks_count /
-                           total_approved_tasks_count))
+                    100
+                    * (dep_approved_tasks_count / total_approved_tasks_count)
+                )
 
         data = {
             'personal_progress': user_percentage,
@@ -146,7 +148,7 @@ class CustomDjUserViewSet(UserViewSet):
     def upload_image(self, request, pk=None):
         """Загрузка изображения для профиля пользователя."""
         user = self.get_object()
-        serializer = UserImageSerializer(user, data=request.data)
+        serializer = UploadUserImageSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

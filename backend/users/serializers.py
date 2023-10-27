@@ -28,7 +28,7 @@ class HardskillsSerializer(serializers.ModelSerializer):
         fields = ('name',)
 
 
-class UserImageSerializer(serializers.ModelSerializer):
+class UploadUserImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('image',)
