@@ -4,7 +4,7 @@ target-version = 'py39'
 line-length = 79
 skip-string-normalization = true
 skip-magic-trailing-comma = false
-extend-exclude = '''
+force-exclude = '''
     (
         backend/backend/settings.py
         | migrations
