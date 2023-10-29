@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from tasks.models import Task
 from users.filters import UserFilter
 from users.models import Achievement, User, UserAchievement
-from users.permissions import IsAnonymous, IsOwnerOrTeamleader, IsTeamLeader
+from users.permissions import IsAnonymous, IsOwner, IsTeamLeader
 from users.serializers import (
     CustomUserRetrieveSerializer,
     ProgressSerializer,
@@ -44,10 +44,6 @@ from users.serializers import (
     ),
 )
 class CustomDjUserViewSet(UserViewSet):
-    """
-    Overriding djoser's Users view
-    """
-
     serializer_class = CustomUserRetrieveSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = UserFilter
@@ -68,30 +64,19 @@ class CustomDjUserViewSet(UserViewSet):
         if self.action in ['me', 'progress']:
             return [IsAuthenticated()]
         if self.action in ['delete_image', 'upload_image']:
-            return [IsOwnerOrTeamleader]
+            return [IsOwner()]
         return super().get_permissions()
 
     def get_queryset(self):
         return User.objects.all()
 
+    @extend_schema(summary='Получить информацию о себе.')
     @action(methods=['get'], detail=False)
     def me(self, request, *args, **kwargs):
-        """Получить информацию о себе."""
         self.get_object = self.get_instance
         return self.retrieve(request, *args, **kwargs)
 
-    def set_username(self, request, *args, **kwargs):
-        pass
-
-    def reset_username(self, request, *args, **kwargs):
-        pass
-
-    def reset_username_confirm(self, request, *args, **kwargs):
-        pass
-
-    def set_password(self, request, *args, **kwargs):
-        pass
-
+    @extend_schema(summary='Получение прогресса пользователя')
     @action(methods=['get'], detail=False, serializer_class=ProgressSerializer)
     def progress(self, request):
         """
@@ -144,28 +129,40 @@ class CustomDjUserViewSet(UserViewSet):
         serializer.is_valid()
         return Response(serializer.data)
 
+    @extend_schema(
+        summary='Загрузка изображения для профиля пользователя.',
+        responses=UploadUserImageSerializer,
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'image': {'type': 'string', 'format': 'binary'}
+                },
+            },
+        },
+    )
     @action(detail=True, methods=['post'])
-    def upload_image(self, request, pk=None):
-        """Загрузка изображения для профиля пользователя."""
+    def upload_image(self, request, *args, **kwargs):
         user = self.get_object()
         serializer = UploadUserImageSerializer(user, data=request.data)
         if serializer.is_valid():
+            if user.image:
+                user.image.delete()
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(summary='Удаление изображения профиля пользователя.')
     @action(detail=True, methods=['delete'])
-    def delete_image(self, request, pk=None):
-        """Удаление изображения профиля пользователя."""
+    def delete_image(self, request, *args, **kwargs):
         user = self.get_object()
         user.image.delete()
-        user.image = None
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(summary='Добавление достижений в профиль пользователя.')
     @action(detail=True, methods=['patch'])
-    def add_achievements(self, request, id):
-        """Добавление достижений в профиль пользователя."""
+    def add_achievements(self, request, *args, **kwargs):
         user = self.get_object()
         achievements_data = request.data.get('achievements', [])
         for achievement_data in achievements_data:
@@ -179,27 +176,24 @@ class CustomDjUserViewSet(UserViewSet):
             if 'image' in achievement_data:
                 achievement.image = achievement_data['image']
             achievement.save()
-            try:
-                (
-                    user_achievement,
-                    created,
-                ) = UserAchievement.objects.get_or_create(
-                    user=user, achievement=achievement, defaults={}
+            (
+                user_achievement,
+                created,
+            ) = UserAchievement.objects.get_or_create(
+                user=user, achievement=achievement, defaults={}
+            )
+            if created:
+                user.reward_points = user.reward_points + achievement.value
+                user.reward_points_for_current_month = (
+                    user.reward_points_for_current_month + achievement.value
                 )
-                if created:
-                    user.reward_points = user.reward_points + achievement.value
-                    user.reward_points_for_current_month = (
-                        user.reward_points_for_current_month
-                        + achievement.value
-                    )
-            except Exception:
-                pass
+
         user.save()
         serializer = self.get_serializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(description='Получение информации пользователя для хедера.')
+@extend_schema(summary='Получение информации пользователя для хедера.')
 class ShortUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ShortUserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]

@@ -2,6 +2,7 @@ from datetime import date
 
 from dateutil.relativedelta import relativedelta  # type: ignore
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
 from tasks.models import Task
@@ -29,6 +30,8 @@ class HardskillsSerializer(serializers.ModelSerializer):
 
 
 class UploadUserImageSerializer(serializers.ModelSerializer):
+    image = Base64ImageField(required=False)
+
     class Meta:
         model = User
         fields = ('image',)
@@ -73,12 +76,12 @@ class CustomUserRetrieveSerializer(UserSerializer):
             'total_tasks',
         )
 
-    def get_contacts(self, obj):
+    def get_contacts(self, obj) -> ContactSerializer:
         user = self.context['request'].user
         queryset = Contact.objects.filter(user_id=user.id)
         return ContactSerializer(queryset, many=True).data
 
-    def get_total_tasks(self, instance):
+    def get_total_tasks(self, instance) -> int:
         today = date.today()
         start_of_month = today.replace(day=1)
         end_of_month = today + relativedelta(day=31)
@@ -89,7 +92,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
         ).count()
         return total_tasks
 
-    def get_remaining_tasks_count(self, obj):
+    def get_remaining_tasks_count(self, obj) -> int:
         today = date.today()
         start_of_month = today.replace(day=1)
         end_of_month = today + relativedelta(day=31)
@@ -192,7 +195,7 @@ class ShortUserProfileSerializer(serializers.ModelSerializer):
             'reward_points_for_current_month',
         )
 
-    def get_rating(self, obj):
+    def get_rating(self, obj) -> int:
         users = User.objects.filter(is_active=True).order_by(
             '-reward_points', 'email'
         )
@@ -200,5 +203,5 @@ class ShortUserProfileSerializer(serializers.ModelSerializer):
         rating = user_ids.index(obj.id) + 1
         return rating
 
-    def get_department(self, obj):
+    def get_department(self, obj) -> str:
         return str(self.context['request'].user.department)
