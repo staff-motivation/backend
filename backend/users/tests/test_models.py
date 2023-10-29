@@ -1,10 +1,8 @@
 import shutil
 import tempfile
-from io import BytesIO
 
-from PIL import Image
+from core.utils import get_image_file
 from django.conf import settings
-from django.core.files import File
 from django.db import IntegrityError
 from django.test import TestCase, override_settings
 
@@ -48,7 +46,7 @@ class UserModelTest(TestCase):
             reward_points=0,
             is_staff=True,
             is_active=True,
-            image=cls.get_image_file(),
+            image=get_image_file(),
         )
         cls.user.hardskills.set([hardskill])
 
@@ -56,15 +54,6 @@ class UserModelTest(TestCase):
     def tearDownClass(cls):
         super().tearDownClass()
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
-
-    @staticmethod
-    def get_image_file(name='test.png', ext='png', size=(50, 50),
-                       color=(256, 0, 0)):
-        file_obj = BytesIO()
-        image = Image.new("RGBA", size=size, color=color)
-        image.save(file_obj, ext)
-        file_obj.seek(0)
-        return File(file_obj, name=name)
 
     def test_field_labels(self):
         user = self.user
