@@ -31,6 +31,6 @@ class Command(BaseCommand):
                     user.reward_points_for_current_month += achievement.value
                     user.save()
 
-        self.stdout.write(self.style.SUCCESS(
-            'Достижения "Выполено 20 задач" выданы.'
-        ))
+        self.stdout.write(
+            self.style.SUCCESS('Достижения "Выполено 20 задач" выданы.')
+        )
