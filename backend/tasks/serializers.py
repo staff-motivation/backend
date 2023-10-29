@@ -1,5 +1,6 @@
-from rest_framework import serializers
 from datetime import datetime
+
+from rest_framework import serializers
 
 from department.models import Department
 from tasks.models import Task
@@ -38,6 +39,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class TaskCreateSerializer(TaskSerializer):
     """[POST] Создание новой задачи."""
+
     def validate(self, obj):
         department = obj.get('department')
         user = obj.get('assigned_to')
@@ -47,8 +49,7 @@ class TaskCreateSerializer(TaskSerializer):
                 {'deadline': 'Дедлайн не может быть в прощедшей дате.'}
             )
         if not User.objects.filter(
-            department__name=department,
-            id=user.id
+            department__name=department, id=user.id
         ).exists():
             raise serializers.ValidationError(
                 {'department': 'Такого пользователя нет в этом департаменте.'}

@@ -24,7 +24,5 @@ class Migration(migrations.Migration):
                 verbose_name='Подразделение',
             ),
         ),
-        migrations.DeleteModel(
-            name='Department',
-        ),
+        migrations.DeleteModel(name='Department',),
     ]
