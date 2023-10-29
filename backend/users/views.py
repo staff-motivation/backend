@@ -19,6 +19,7 @@ from users.permissions import (
     IsTeamLeader,
 )
 from users.serializers import (
+    AchievementSerializer,
     CustomUserRetrieveSerializer,
     ProgressSerializer,
     ShortUserProfileSerializer,
@@ -210,3 +211,9 @@ class ShortUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return User.objects.filter(id=self.request.user.id)
+
+
+class AchivementsViewSet(viewsets.ModelViewSet):
+    queryset = Achievement.objects.all()
+    serializer_class = AchievementSerializer
+    permission_classes = [IsTeamLeader]

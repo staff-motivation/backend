@@ -2,6 +2,7 @@ from datetime import date
 
 from django.core.management.base import BaseCommand
 
+from tasks.models import Task
 from users.models import Achievement, User, UserAchievement
 
 
@@ -15,14 +16,15 @@ class Command(BaseCommand):
             assigned_tasks__is_overdue=False,
             assigned_tasks__deadline__month=current_month,
             assigned_tasks__deadline__year=current_year,
+            assigned_tasks__status=Task.APPROVED,
         ).distinct()
-        achievement, _ = Achievement.objects.get_or_create(
-            name='Соблюдение дедлайна', value=30
-        )
+        achievement = Achievement.objects.get(name='Соблюдение дедлайна')
         for user in all_users:
             UserAchievement.objects.create(user=user, achievement=achievement)
-            user.reward_points += achievement[0].value
-            user.reward_points_for_current_month += achievement[0].value
+            user.reward_points += achievement.value
+            user.reward_points_for_current_month += achievement.value
             user.save()
 
-        self.stdout.write(self.style.SUCCESS('Достижения выданы.'))
+        self.stdout.write(self.style.SUCCESS(
+            'Достижения "Соблюдение дедайна" выданы.'
+        ))
