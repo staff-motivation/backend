@@ -1,5 +1,7 @@
 import datetime
 
+from datetime import date
+
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -17,7 +19,7 @@ from tasks.serializers import (
     TaskReviewSerializer,
     TaskSerializer,
 )
-from users.models import User
+from users.models import Achievement, User, UserAchievement
 
 
 @extend_schema_view(
@@ -174,6 +176,8 @@ class TaskViewSet(viewsets.ModelViewSet):
                     )
                     assigned_user.save()
 
+                    self.assign_achivements(assigned_user)
+
                     Notification.objects.create(
                         user=task.team_leader,
                         message=(
@@ -239,3 +243,43 @@ class TaskViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(deadline__lt=datetime.date.today())
 
         return queryset
+
+    def assign_achivements(user):
+        """
+        Назначение достижений при изменении статуса задачи на \"Принято\".
+        """
+        current_year = date.today().year
+        current_month = date.today().month
+        try:
+            achieve_10_tasks = Achievement.objects.get(
+                name='Выполено 10 задач'
+            )
+            achieve_20_tasks = Achievement.objects.get(
+                name='Выполено 20 задач'
+            )
+        except Achievement.DoesNotExist:
+            return
+        tasks_count = Task.objects.filter(
+            assigned_to=user.id,
+            deadline__month=current_month,
+            deadline__year=current_year,
+            status=Task.APPROVED,
+        ).count()
+        if tasks_count >= 10:
+            _, created = UserAchievement.objects.get_or_create(
+                user=user,
+                achievement=achieve_10_tasks,
+            )
+            if created:
+                user.reward_points += achieve_10_tasks.value
+                user.reward_points_for_current_month += achieve_10_tasks.value
+                user.save()
+        if tasks_count >= 20:
+            _, created = UserAchievement.objects.get_or_create(
+                user=user,
+                achievement=achieve_20_tasks,
+            )
+            if created:
+                user.reward_points += achieve_20_tasks.value
+                user.reward_points_for_current_month += achieve_20_tasks.value
+                user.save()
