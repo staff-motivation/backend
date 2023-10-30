@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from tasks.models import Task
 from users.filters import UserFilter
 from users.models import Achievement, User, UserAchievement
-from users.permissions import IsAnonymous, IsOwner, IsTeamLeader
+from users.permissions import IsAnonymous, IsOwnerOrTeamleader, IsTeamLeader
 from users.serializers import (
     CustomUserRetrieveSerializer,
     ProgressSerializer,
@@ -64,7 +64,7 @@ class CustomDjUserViewSet(UserViewSet):
         if self.action in ['me', 'progress']:
             return [IsAuthenticated()]
         if self.action in ['delete_image', 'upload_image']:
-            return [IsOwner()]
+            return [IsOwnerOrTeamleader()]
         return super().get_permissions()
 
     def get_queryset(self):
