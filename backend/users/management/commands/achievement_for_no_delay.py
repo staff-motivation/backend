@@ -2,7 +2,6 @@ from datetime import date
 
 from django.core.management.base import BaseCommand
 
-from tasks.models import Task
 from users.models import Achievement, User, UserAchievement
 
 
