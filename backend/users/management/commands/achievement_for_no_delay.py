@@ -16,7 +16,6 @@ class Command(BaseCommand):
             assigned_tasks__is_overdue=False,
             assigned_tasks__deadline__month=current_month,
             assigned_tasks__deadline__year=current_year,
-            assigned_tasks__status=Task.APPROVED,
         ).distinct()
         achievement = Achievement.objects.get(name='Соблюдение дедлайна')
         for user in all_users:
