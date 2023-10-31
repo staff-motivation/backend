@@ -1,5 +1,10 @@
+import shutil
+import tempfile
+
+from core.utils import get_image_file
+from django.conf import settings
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from department.models import Department
 from users.models import (
@@ -13,19 +18,23 @@ from users.models import (
     UserRole,
 )
 
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class UserModelTest(TestCase):
     """
     Тестирование модели User.
     """
 
     @classmethod
-    def setUpTestData(cls):
+    def setUpClass(cls):
+        super().setUpClass()
         department = Department.objects.create(
             name='Backend', description='Test department'
         )
         hardskill = Hardskill.objects.create(name='Python')
-        User.objects.create(
+        cls.user = User.objects.create(
             department=department,
             email='test@mail.ru',
             first_name='User',
@@ -37,10 +46,17 @@ class UserModelTest(TestCase):
             reward_points=0,
             is_staff=True,
             is_active=True,
-        ).hardskills.add(hardskill)
+            image=get_image_file(),
+        )
+        cls.user.hardskills.set([hardskill])
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def test_field_labels(self):
-        user = User.objects.get(id=1)
+        user = self.user
         labels = {
             'department': 'Подразделение',
             'email': 'Адрес электронной почты',
@@ -61,37 +77,40 @@ class UserModelTest(TestCase):
                 self.assertEqual(field_label, label)
 
     def test_str_method(self):
-        user = User.objects.get(id=1)
+        user = self.user
         expected_str = 'User Userov'
         self.assertEqual(str(user), expected_str)
 
     def test_get_full_name_method(self):
-        user = User.objects.get(id=1)
+        user = self.user
         expected_full_name = 'Userov User'
         self.assertEqual(user.get_full_name(), expected_full_name)
 
     def test_get_short_name_method(self):
-        user = User.objects.get(id=1)
+        user = self.user
         expected_short_name = 'User'
         self.assertEqual(user.get_short_name(), expected_short_name)
 
     def test_departments(self):
-        user = User.objects.get(id=1)
+        user = self.user
         self.assertEqual(user.department.name, 'Backend')
         self.assertEqual(user.department.description, 'Test department')
 
     def test_is_admin_property(self):
-        user = User.objects.get(id=1)
+        user = self.user
         self.assertFalse(user.is_admin)
 
     def test_is_teamleader_property(self):
-        user = User.objects.get(id=1)
+        user = self.user
         self.assertTrue(user.is_teamleader)
 
     def test_is_role_property(self):
-        user = User.objects.get(id=1)
+        user = self.user
         self.assertFalse(user.is_admin)
         self.assertTrue(user.is_teamleader)
+
+    def test_is_have_image(self):
+        self.assertTrue(self.user.image)
 
 
 class HardskillModelTest(TestCase):
