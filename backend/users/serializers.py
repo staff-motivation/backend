@@ -2,6 +2,7 @@ from datetime import date
 
 from dateutil.relativedelta import relativedelta  # type: ignore
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 
 from tasks.models import Task
@@ -28,7 +29,9 @@ class HardskillsSerializer(serializers.ModelSerializer):
         fields = ('name',)
 
 
-class UserImageSerializer(serializers.ModelSerializer):
+class UploadUserImageSerializer(serializers.ModelSerializer):
+    image = Base64ImageField(required=False)
+
     class Meta:
         model = User
         fields = ('image',)
