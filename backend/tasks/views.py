@@ -244,7 +244,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    def assign_achivements(user):
+    def assign_achivements(self, user):
         """
         Назначение достижений при изменении статуса задачи на \"Принято\".
         """
