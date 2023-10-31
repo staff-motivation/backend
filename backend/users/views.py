@@ -21,6 +21,11 @@ from users.serializers import (
 )
 
 
+class DisableUnusedEndpointsUserViewSet(UserViewSet):
+    def set_password(self, request, *args, **kwargs):
+        pass
+
+
 @extend_schema(tags=['Users'])
 @extend_schema_view(
     list=extend_schema(
@@ -43,7 +48,7 @@ from users.serializers import (
         description='Изменяет только переданные поля.',
     ),
 )
-class CustomDjUserViewSet(UserViewSet):
+class CustomDjUserViewSet(DisableUnusedEndpointsUserViewSet):
     serializer_class = CustomUserRetrieveSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = UserFilter
