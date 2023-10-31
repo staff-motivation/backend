@@ -16,13 +16,13 @@ class Command(BaseCommand):
             assigned_tasks__deadline__month=current_month,
             assigned_tasks__deadline__year=current_year,
         ).distinct()
-        achievement, _ = Achievement.objects.get_or_create(
-            name='Соблюдение дедлайна', value=30
-        )
+        achievement = Achievement.objects.get(name='Соблюдение дедлайна')
         for user in all_users:
             UserAchievement.objects.create(user=user, achievement=achievement)
-            user.reward_points += achievement[0].value
-            user.reward_points_for_current_month += achievement[0].value
+            user.reward_points += achievement.value
+            user.reward_points_for_current_month += achievement.value
             user.save()
 
-        self.stdout.write(self.style.SUCCESS('Достижения выданы.'))
+        self.stdout.write(
+            self.style.SUCCESS('Достижения "Соблюдение дедайна" выданы.')
+        )

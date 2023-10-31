@@ -1,5 +1,7 @@
 import datetime
 
+from datetime import date
+
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -17,7 +19,7 @@ from tasks.serializers import (
     TaskReviewSerializer,
     TaskSerializer,
 )
-from users.models import User
+from users.models import Achievement, User, UserAchievement
 
 
 @extend_schema_view(
@@ -174,6 +176,8 @@ class TaskViewSet(viewsets.ModelViewSet):
                     )
                     assigned_user.save()
 
+                    self.assign_achivements(assigned_user)
+
                     Notification.objects.create(
                         user=task.team_leader,
                         message=(
@@ -239,3 +243,34 @@ class TaskViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(deadline__lt=datetime.date.today())
 
         return queryset
+
+    def assign_achivements(self, user):
+        """
+        Назначение достижений при изменении статуса задачи на \"Принято\".
+        """
+        current_year = date.today().year
+        current_month = date.today().month
+        try:
+            achieve_work_quality = Achievement.objects.get(
+                name='Качество работы'
+            )
+        except Achievement.DoesNotExist:
+            return
+        tasks_count = Task.objects.filter(
+            assigned_to=user.id,
+            deadline__month=current_month,
+            deadline__year=current_year,
+            status=Task.APPROVED,
+            is_overdue=False,
+        ).count()
+        if tasks_count >= 30:
+            _, created = UserAchievement.objects.get_or_create(
+                user=user,
+                achievement=achieve_work_quality,
+            )
+            if created:
+                user.reward_points += achieve_work_quality.value
+                user.reward_points_for_current_month += (
+                    achieve_work_quality.value
+                )
+                user.save()

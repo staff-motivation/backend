@@ -20,7 +20,7 @@ class AchievementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Achievement
-        fields = ('name', 'value', 'image', 'description')
+        fields = '__all__'
 
 
 class HardskillsSerializer(serializers.ModelSerializer):

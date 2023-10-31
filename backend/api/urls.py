@@ -4,10 +4,15 @@ from rest_framework.routers import DefaultRouter
 
 from api.views import UserNotificationsViewSet
 from tasks.views import TaskViewSet
-from users.views import CustomDjUserViewSet, ShortUserProfileViewSet
+from users.views import (
+    AchivementsViewSet,
+    CustomDjUserViewSet,
+    ShortUserProfileViewSet,
+)
 
 router = DefaultRouter()
 router.register(r'users', CustomDjUserViewSet, basename='users')
+router.register(r'achivements', AchivementsViewSet, basename='achivements')
 router.register(r'tasks', TaskViewSet, basename='tasks')
 router.register(
     r'notifications', UserNotificationsViewSet, basename='user-notifications'
