@@ -72,7 +72,7 @@ class CustomDjUserViewSet(UserViewSet):
         if self.action in ['me', 'progress']:
             return [IsAuthenticated()]
         if self.action in ['delete_image', 'upload_image']:
-            return [IsOwnerOrTeamleader]
+            return [IsOwnerOrTeamleader()]
         return super().get_permissions()
 
     def get_queryset(self):
