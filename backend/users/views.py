@@ -22,7 +22,7 @@ from users.serializers import (
     CustomUserRetrieveSerializer,
     ProgressSerializer,
     ShortUserProfileSerializer,
-    UserImageSerializer,
+    UploadUserImageSerializer,
 )
 
 
@@ -148,19 +148,32 @@ class CustomDjUserViewSet(UserViewSet):
         serializer.is_valid()
         return Response(serializer.data)
 
+    @extend_schema(
+        summary='Загрузка изображения для профиля пользователя.',
+        responses=UploadUserImageSerializer,
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'image': {'type': 'string', 'format': 'binary'}
+                },
+            },
+        },
+    )
     @action(detail=True, methods=['post'])
-    def upload_image(self, request, pk=None):
-        """Загрузка изображения для профиля пользователя."""
+    def upload_image(self, request, *args, **kwargs):
         user = self.get_object()
-        serializer = UserImageSerializer(user, data=request.data)
+        serializer = UploadUserImageSerializer(user, data=request.data)
         if serializer.is_valid():
+            if user.image:
+                user.image.delete()
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(summary='Удаление изображения профиля пользователя.')
     @action(detail=True, methods=['delete'])
-    def delete_image(self, request, pk=None):
-        """Удаление изображения профиля пользователя."""
+    def delete_image(self, request, *args, **kwargs):
         user = self.get_object()
         user.image.delete()
         user.image = None
