@@ -8,18 +8,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         Achievement.objects.get_or_create(
-            name='Выполено 10 задач',
-            value=20,
-            description='Достижение за 10 выполненных задач.',
-        )
-        Achievement.objects.get_or_create(
-            name='Выполено 20 задач',
-            value=40,
-            description='Достижение за 20 выполненных задач.',
+            name='Качество работы',
+            value=30,
+            description='Достижение за 30 выполненных задач в срок.',
         )
         Achievement.objects.get_or_create(
             name='Соблюдение дедлайна',
-            value=30,
+            value=45,
             description='Достижение за выполение задач в срок.',
         )
 

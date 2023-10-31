@@ -251,11 +251,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         current_year = date.today().year
         current_month = date.today().month
         try:
-            achieve_10_tasks = Achievement.objects.get(
-                name='Выполено 10 задач'
-            )
-            achieve_20_tasks = Achievement.objects.get(
-                name='Выполено 20 задач'
+            achieve_work_quality = Achievement.objects.get(
+                name='Качество работы'
             )
         except Achievement.DoesNotExist:
             return
@@ -264,22 +261,16 @@ class TaskViewSet(viewsets.ModelViewSet):
             deadline__month=current_month,
             deadline__year=current_year,
             status=Task.APPROVED,
+            is_overdue=False,
         ).count()
-        if tasks_count >= 10:
+        if tasks_count >= 30:
             _, created = UserAchievement.objects.get_or_create(
                 user=user,
-                achievement=achieve_10_tasks,
+                achievement=achieve_work_quality,
             )
             if created:
-                user.reward_points += achieve_10_tasks.value
-                user.reward_points_for_current_month += achieve_10_tasks.value
-                user.save()
-        if tasks_count >= 20:
-            _, created = UserAchievement.objects.get_or_create(
-                user=user,
-                achievement=achieve_20_tasks,
-            )
-            if created:
-                user.reward_points += achieve_20_tasks.value
-                user.reward_points_for_current_month += achieve_20_tasks.value
+                user.reward_points += achieve_work_quality.value
+                user.reward_points_for_current_month += (
+                    achieve_work_quality.value
+                )
                 user.save()
