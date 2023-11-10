@@ -28,7 +28,7 @@ def how_much_time_has_passed(dt: datetime) -> str:
     result += get_time_str(delta.years, PERIODS['years'])
     result += get_time_str(delta.months, PERIODS['month'])
     result += get_time_str(delta.days, PERIODS['days'])
-    return result.rstrip()
+    return result.rstrip() if len(result) > 1 else 'Меньше одного дня'
 
 
 def get_time_str(value: int, period_str: list[str]) -> str:
