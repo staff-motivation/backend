@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
 from django.db.models import UniqueConstraint
+from django.utils.timezone import now
 from rest_framework import serializers
 
 from backend.settings import MAX_LENGTH_EMAIL, MAX_LENGTH_USERNAME
@@ -167,8 +168,13 @@ class User(AbstractUser):
         choices=Position.choices,
         default=Position.JUNIOR,
     )
-    experience = models.IntegerField(
-        verbose_name='Рабочий стаж в команде', default=1
+    experience = models.DateTimeField(
+        verbose_name='Рабочий стаж в команде',
+        default=now,
+    )
+    general_experience = models.DateTimeField(
+        verbose_name='Общий стаж',
+        default=now,
     )
     reward_points = models.PositiveIntegerField(
         verbose_name='Баллы', default=0
