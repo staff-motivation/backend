@@ -20,6 +20,7 @@ class TaskModelTest(TestCase):
             password='password',
             role=UserRole.TEAMLEADER,
             position=Position.SENIOR,
+            experience=1,
             reward_points=0,
             is_staff=True,
             is_active=True,
