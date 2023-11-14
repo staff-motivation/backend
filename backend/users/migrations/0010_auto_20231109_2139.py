@@ -15,11 +15,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='general_experience',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='Общий стаж'),
+            field=models.DateTimeField(default=django.utils.timezone.now,
+                                       verbose_name='Общий стаж'),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
             model_name='user',
             name='experience',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='Рабочий стаж в команде'),
+        ),
+        migrations.AddField(
+            model_name='user',
+            name='experience',
+            field=models.DateTimeField(default=django.utils.timezone.now,
+                                       verbose_name='Рабочий стаж в команде'),
         ),
     ]

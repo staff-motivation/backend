@@ -24,7 +24,11 @@ PERIODS = {
 def how_much_time_has_passed(dt: datetime) -> str:
     result = ''
     now = datetime.now(timezone.utc)
-    delta = relativedelta(now, dt)
+    try:
+        delta = relativedelta(now, dt)
+    except TypeError:
+        print('Ошибка преобразования ')
+        return ''
     result += get_time_str(delta.years, PERIODS['years'])
     result += get_time_str(delta.months, PERIODS['month'])
     result += get_time_str(delta.days, PERIODS['days'])
