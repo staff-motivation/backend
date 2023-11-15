@@ -1,5 +1,7 @@
 import json
 
+from datetime import datetime, timedelta, timezone
+
 from core.utils import get_image_file
 from django.db.models.fields.files import ImageFieldFile
 from rest_framework import status
@@ -13,8 +15,9 @@ class UserTests(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        dt = datetime.now(timezone.utc) - timedelta(days=5)
         cls.client = APIClient()
-        cls.user = UserFactory.create()
+        cls.user = UserFactory.create(experience=dt)
         cls.client_aut = APIClient()
         cls.client_aut.force_authenticate(user=cls.user)
 
@@ -71,3 +74,12 @@ class UserTests(APITestCase):
         response = self.client_aut.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(self.user.image)
+
+    def test_user_experience(self):
+        """Проверка получения стажа в текстовом виде"""
+        response = self.client_aut.get('/api/users/me/')
+        response_content = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(response_content['experience'], '5 дней')
+        self.assertEqual(
+            response_content['general_experience'], 'Меньше одного дня'
+        )

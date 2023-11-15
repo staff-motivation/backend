@@ -1,5 +1,6 @@
 from datetime import date
 
+from core.utils import how_much_time_has_passed
 from dateutil.relativedelta import relativedelta  # type: ignore
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_base64.fields import Base64ImageField
@@ -54,6 +55,8 @@ class CustomUserRetrieveSerializer(UserSerializer):
     reward_points_for_current_month = serializers.IntegerField()
     remaining_tasks_count = serializers.SerializerMethodField()
     total_tasks = serializers.SerializerMethodField()
+    experience = serializers.SerializerMethodField()
+    general_experience = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -74,6 +77,8 @@ class CustomUserRetrieveSerializer(UserSerializer):
             'reward_points_for_current_month',
             'remaining_tasks_count',
             'total_tasks',
+            'experience',
+            'general_experience',
         )
 
     def get_contacts(self, obj):
@@ -142,6 +147,18 @@ class CustomUserRetrieveSerializer(UserSerializer):
                     )
         instance = super().update(instance, validated_data)
         return instance
+
+    def get_experience(self, obj):
+        dt = obj.experience
+        if dt:
+            return how_much_time_has_passed(dt)
+        return 'Нет данных'
+
+    def get_general_experience(self, obj):
+        dt = obj.general_experience
+        if dt:
+            return how_much_time_has_passed(dt)
+        return 'Нет данных'
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):

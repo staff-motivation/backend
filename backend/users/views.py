@@ -79,9 +79,17 @@ class CustomDjUserViewSet(UserViewSet):
     def get_queryset(self):
         return User.objects.all()
 
+    @extend_schema(
+        summary='Получить информацию о себе.',
+        description=(
+            'Стаж (experience) и полный стаж (general_experience) выводятся '
+            'в текстовом виде (количество лет, месяцев и дней). Если дата не '
+            'установлена вернет: "Нет данных", если прошло меньше дня, то '
+            'вернет: "Меньше одного дня"'
+        ),
+    )
     @action(methods=['get'], detail=False)
     def me(self, request, *args, **kwargs):
-        """Получить информацию о себе."""
         self.get_object = self.get_instance
         return self.retrieve(request, *args, **kwargs)
 
