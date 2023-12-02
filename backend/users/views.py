@@ -18,6 +18,7 @@ from users.permissions import (
     IsOwnerOrTeamleader,
     IsTeamLeader,
 )
+from users.schema import user_schema
 from users.serializers import (
     AchievementSerializer,
     CustomUserRetrieveSerializer,
@@ -27,27 +28,7 @@ from users.serializers import (
 )
 
 
-@extend_schema_view(
-    list=extend_schema(
-        description='Получение списка пользователей.\n'
-        '\nФильтрация по роли: /api/users/?role=admin\n'
-        '\nФильтрация по должности: /api/users/?position=senior\n'
-        '\nФильтрация по подразделению: /api/users/?department=Backend\n'
-        '\nПоиск по email: /api/users/?email=user@example.com\n'
-        '\nПоиск по имени: /api/users/?first_name=John\n'
-        '\nПоиск по фамилии: /api/users/?last_name=Doe\n'
-    ),
-    create=extend_schema(description='Создание нового пользователя.'),
-    retrieve=extend_schema(description='Получение пользователя по id.'),
-    destroy=extend_schema(description='Удаление пользователя по id.'),
-    update=extend_schema(
-        description='Обновление пользователя по id.' ' Меняет объект целиком.'
-    ),
-    partial_update=extend_schema(
-        description='Обновление пользователя по id.'
-        ' Изменяет только переданные поля.'
-    ),
-)
+@extend_schema_view(**user_schema.custom_dj_user)
 class CustomDjUserViewSet(UserViewSet):
     """
     Overriding djoser's Users view
