@@ -18,6 +18,7 @@ from users.permissions import (
     IsOwnerOrTeamleader,
     IsTeamLeader,
 )
+from users.schema import user_schema
 from users.serializers import (
     AchievementSerializer,
     CustomUserRetrieveSerializer,
@@ -27,32 +28,9 @@ from users.serializers import (
 )
 
 
-@extend_schema_view(
-    list=extend_schema(
-        description='Получение списка пользователей.\n'
-        '\nФильтрация по роли: /api/users/?role=admin\n'
-        '\nФильтрация по должности: /api/users/?position=senior\n'
-        '\nФильтрация по подразделению: /api/users/?department=Backend\n'
-        '\nПоиск по email: /api/users/?email=user@example.com\n'
-        '\nПоиск по имени: /api/users/?first_name=John\n'
-        '\nПоиск по фамилии: /api/users/?last_name=Doe\n'
-    ),
-    create=extend_schema(description='Создание нового пользователя.'),
-    retrieve=extend_schema(description='Получение пользователя по id.'),
-    destroy=extend_schema(description='Удаление пользователя по id.'),
-    update=extend_schema(
-        description='Обновление пользователя по id.' ' Меняет объект целиком.'
-    ),
-    partial_update=extend_schema(
-        description='Обновление пользователя по id.'
-        ' Изменяет только переданные поля.'
-    ),
-)
+@extend_schema(tags=['Users'])
+@extend_schema_view(**user_schema.custom_dj_user)
 class CustomDjUserViewSet(UserViewSet):
-    """
-    Overriding djoser's Users view
-    """
-
     serializer_class = CustomUserRetrieveSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = UserFilter
@@ -79,15 +57,6 @@ class CustomDjUserViewSet(UserViewSet):
     def get_queryset(self):
         return User.objects.all()
 
-    @extend_schema(
-        summary='Получить информацию о себе.',
-        description=(
-            'Стаж (experience) и полный стаж (general_experience) выводятся '
-            'в текстовом виде (количество лет, месяцев и дней). Если дата не '
-            'установлена вернет: "Нет данных", если прошло меньше дня, то '
-            'вернет: "Меньше одного дня"'
-        ),
-    )
     @action(methods=['get'], detail=False)
     def me(self, request, *args, **kwargs):
         self.get_object = self.get_instance
@@ -107,10 +76,6 @@ class CustomDjUserViewSet(UserViewSet):
 
     @action(methods=['get'], detail=False, serializer_class=ProgressSerializer)
     def progress(self, request):
-        """
-        Получение прогресса пользователя и его департамента за месяц.
-        Значение в процентах от всех выполненных задач за месяц.
-        """
         user = request.user
         today = date.today()
         start_of_month = today.replace(day=1)
@@ -157,18 +122,6 @@ class CustomDjUserViewSet(UserViewSet):
         serializer.is_valid()
         return Response(serializer.data)
 
-    @extend_schema(
-        summary='Загрузка изображения для профиля пользователя.',
-        responses=UploadUserImageSerializer,
-        request={
-            'multipart/form-data': {
-                'type': 'object',
-                'properties': {
-                    'image': {'type': 'string', 'format': 'binary'}
-                },
-            },
-        },
-    )
     @action(detail=True, methods=['post'])
     def upload_image(self, request, *args, **kwargs):
         user = self.get_object()
@@ -180,7 +133,6 @@ class CustomDjUserViewSet(UserViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @extend_schema(summary='Удаление изображения профиля пользователя.')
     @action(detail=True, methods=['delete'])
     def delete_image(self, request, *args, **kwargs):
         user = self.get_object()
@@ -191,7 +143,6 @@ class CustomDjUserViewSet(UserViewSet):
 
     @action(detail=True, methods=['patch'])
     def add_achievements(self, request, id):
-        """Добавление достижений в профиль пользователя."""
         user = self.get_object()
         achievements_data = request.data.get('achievements', [])
         for achievement_data in achievements_data:
@@ -225,7 +176,7 @@ class CustomDjUserViewSet(UserViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(description='Получение информации пользователя для хедера.')
+@extend_schema(**user_schema.short_user_profile, tags=['Users'])
 class ShortUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ShortUserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -234,6 +185,7 @@ class ShortUserProfileViewSet(viewsets.ReadOnlyModelViewSet):
         return User.objects.filter(id=self.request.user.id)
 
 
+@extend_schema(tags=['Achivements'])
 class AchivementsViewSet(viewsets.ModelViewSet):
     queryset = Achievement.objects.all()
     serializer_class = AchievementSerializer

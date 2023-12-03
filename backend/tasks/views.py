@@ -14,6 +14,7 @@ from department.models import Department
 from notifications.models import Notification
 from tasks.models import Task
 from tasks.permissions import IsTeamleader
+from tasks.schema import task_schema
 from tasks.serializers import (
     TaskCreateSerializer,
     TaskReviewSerializer,
@@ -22,22 +23,8 @@ from tasks.serializers import (
 from users.models import Achievement, User, UserAchievement
 
 
-@extend_schema_view(
-    list=extend_schema(
-        description='Получение списка задач текущего'
-        ' пользователя или тимлида.'
-        'Упорядочено по дате создания(сначала новые).'
-    ),
-    retrieve=extend_schema(description='Получение задачи по id.'),
-    destroy=extend_schema(description='Удаление задачи по id.'),
-    update=extend_schema(
-        description='Обновление задачи по id.' ' Меняет объект целиком.'
-    ),
-    partial_update=extend_schema(
-        description='Обновление задачи по id.'
-        ' Изменяет только переданные поля.'
-    ),
-)
+@extend_schema(tags=['Tasks'])
+@extend_schema_view(**task_schema.task)
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -48,7 +35,6 @@ class TaskViewSet(viewsets.ModelViewSet):
         else:
             return super().get_permissions()
 
-    @extend_schema(description='Обновление статуса просроченных задач.')
     def update_overdue_tasks(self):
         overdue_tasks = Task.objects.filter(
             deadline__lt=timezone.now(),
@@ -58,14 +44,6 @@ class TaskViewSet(viewsets.ModelViewSet):
             task.is_overdue = True
             task.save()
 
-    @extend_schema(
-        description='Создание новой задачи тимлидером. '
-        'Возможные ошибки: '
-        '400: '
-        'Если указать дедлайн прошедшей датой. '
-        '400: '
-        'Eсли указанного сотрудника нет в указанном департаменте.'
-    )
     def create(self, request):
         serializer = TaskCreateSerializer(
             data=request.data, context={'request': request}
@@ -100,11 +78,6 @@ class TaskViewSet(viewsets.ModelViewSet):
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
-    @extend_schema(
-        description=(
-            'Отправка задачи текущего пользователя на проверку тимлидеру.'
-        )
-    )
     @action(detail=True, methods=['POST'], serializer_class=None)
     def send_for_review(self, request, pk=None):
         task = self.get_object()
@@ -143,9 +116,6 @@ class TaskViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @extend_schema(
-        description='Проверка задачи тимлидом и изменение её статуса.'
-    )
     @action(
         detail=True,
         methods=['POST'],
@@ -217,19 +187,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @extend_schema(description='Получение задач с фильтрацией.')
     def get_queryset(self):
-        """
-        Фильтрация задач по статусу и просроченным дедлайнам.
-        Пример запроса с фильтрацией - Новые задачи:
-        http://example.com/api/tasks/?status=createdx
-
-        Пример запроса с фильтрацией - На подтверждении:
-        http://example.com/api/tasks/?status=sent_for_review
-
-        Пример запроса с фильтрацией - Просроченные:
-        http://example.com/api/tasks/?is_overdue=true
-        """
         self.update_overdue_tasks()
         queryset = Task.objects.filter(
             Q(assigned_to=self.request.user) | Q(team_leader=self.request.user)
