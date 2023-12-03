@@ -6,7 +6,9 @@ from api.serializers import NotificationSerializer
 from notifications.models import Notification
 
 
-@extend_schema(description='Получение уведомлений пользователя.')
+@extend_schema(
+    description='Получение уведомлений пользователя.', tags=['Notifications']
+)
 class UserNotificationsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
