@@ -2,9 +2,12 @@ from datetime import date
 
 from core.utils import how_much_time_has_passed
 from dateutil.relativedelta import relativedelta  # type: ignore
+from django.contrib.auth.password_validation import validate_password
+from django.core import exceptions as django_exceptions
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
+from rest_framework.settings import api_settings
 
 from tasks.models import Task
 from users.models import Achievement, Contact, Hardskill, User
@@ -170,7 +173,12 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         fields = UserCreateSerializer.Meta.fields + ('password_confirmation',)
 
     def validate(self, data):
-        if data['password'] != data.get('password_confirmation'):
+        password = data.get('password')
+        if len(password) > 30:
+            raise serializers.ValidationError(
+                'Длина пароля не должна превышать 30 символов.'
+            )
+        if password != data.get('password_confirmation'):
             raise serializers.ValidationError('Пароли должны совпадать.')
 
         if User.objects.filter(email=data['email']).exists():
@@ -190,6 +198,18 @@ class CustomUserCreateSerializer(UserCreateSerializer):
                 'Не все обязательные поля заполнены.'
             )
         data.pop('password_confirmation')
+        user = User(**data)
+        try:
+            validate_password(password, user)
+        except django_exceptions.ValidationError as e:
+            serializer_error = serializers.as_serializer_error(e)
+            raise serializers.ValidationError(
+                {
+                    'password': serializer_error[
+                        api_settings.NON_FIELD_ERRORS_KEY
+                    ]
+                }
+            ) from e
         return data
 
 
