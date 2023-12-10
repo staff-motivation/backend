@@ -47,7 +47,7 @@ class Hardskill(models.Model):
 
 class Contact(models.Model):
     """
-    Модель контактов    .
+    Модель контактов.
     """
 
     user = models.OneToOneField(
