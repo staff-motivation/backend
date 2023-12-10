@@ -14,6 +14,25 @@ from users.models import Achievement, Contact, Hardskill, User
 
 
 class ContactSerializer(serializers.ModelSerializer):
+    def validate_phone(self, value):
+        if value[:1] == '+':
+            left, right = value[:2], value[2:]
+        else:
+            left, right = value[:1], value[1:]
+        if left not in ['+7', '8']:
+            raise serializers.ValidationError(
+                'Номер должен начинаться с +7 или 8'
+            )
+        if len(right) != 10:
+            raise serializers.ValidationError(
+                'Номер должен состоять из 11 цифр'
+            )
+        if not right.isdigit():
+            raise serializers.ValidationError(
+                'В номере должны быть только цифры'
+            )
+        return value
+
     class Meta:
         model = Contact
         fields = ('phone', 'telegram', 'github', 'linkedin')
@@ -84,12 +103,6 @@ class CustomUserRetrieveSerializer(UserSerializer):
             'general_experience',
         )
 
-    # def get_contacts(self, obj):
-    #     user = self.context['request'].user
-    #     # queryset = Contact.objects.filter(user=user.id)
-    #     contact = user.contact.get()
-    #     return ContactSerializer(contact, many=False).data
-
     def get_total_tasks(self, instance):
         today = date.today()
         start_of_month = today.replace(day=1)
@@ -140,7 +153,14 @@ class CustomUserRetrieveSerializer(UserSerializer):
                 )
                 instance.hardskills.add(hardskill)
 
-            Contact.objects.filter(user=instance).update(**contacts_data)
+            try:
+                contact = Contact.objects.get(user=instance)
+                for key, value in contacts_data.items():
+                    setattr(contact, key, value)
+                contact.save()
+            except Contact.DoesNotExist:
+                contacts_data['user'] = instance
+                Contact.objects.create(**contacts_data)
 
         instance = super().update(instance, validated_data)
         return instance
