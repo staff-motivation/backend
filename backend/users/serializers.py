@@ -16,7 +16,7 @@ from users.models import Achievement, Contact, Hardskill, User
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = ('contact_type', 'link')
+        fields = ('phone', 'telegram', 'github', 'linkedin')
 
 
 class AchievementSerializer(serializers.ModelSerializer):
@@ -53,7 +53,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
         read_only=True, default=False
     )
     reward_points = serializers.IntegerField(read_only=True)
-    contacts = serializers.SerializerMethodField()
+    contacts = ContactSerializer(many=False)
     completed_tasks_count = serializers.IntegerField()
     reward_points_for_current_month = serializers.IntegerField()
     remaining_tasks_count = serializers.SerializerMethodField()
@@ -84,10 +84,11 @@ class CustomUserRetrieveSerializer(UserSerializer):
             'general_experience',
         )
 
-    def get_contacts(self, obj):
-        user = self.context['request'].user
-        queryset = Contact.objects.filter(user_id=user.id)
-        return ContactSerializer(queryset, many=True).data
+    # def get_contacts(self, obj):
+    #     user = self.context['request'].user
+    #     # queryset = Contact.objects.filter(user=user.id)
+    #     contact = user.contact.get()
+    #     return ContactSerializer(contact, many=False).data
 
     def get_total_tasks(self, instance):
         today = date.today()
@@ -139,15 +140,8 @@ class CustomUserRetrieveSerializer(UserSerializer):
                 )
                 instance.hardskills.add(hardskill)
 
-            for contact_data in contacts_data:
-                contact_type = contact_data.get('contact_type')
-                link = contact_data.get('link')
-                if contact_type and link:
-                    contact, created = Contact.objects.update_or_create(
-                        user=instance,
-                        contact_type=contact_type,
-                        defaults={'link': link},
-                    )
+            Contact.objects.filter(user=instance).update(**contacts_data)
+
         instance = super().update(instance, validated_data)
         return instance
 
