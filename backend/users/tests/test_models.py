@@ -238,7 +238,7 @@ class ContactModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        user = User.objects.create(
+        cls.user = User.objects.create(
             email='test@mail.ru',
             first_name='User',
             last_name='Userov',
@@ -249,27 +249,15 @@ class ContactModelTest(TestCase):
             is_staff=True,
             is_active=True,
         )
-        Contact.objects.create(
-            user=user, contact_type='Email', link='test@mail.ru'
-        )
-
-    def test_contact_str_method(self):
-        contact = Contact.objects.get(id=1)
-        self.assertEqual(str(contact), 'User - Email: test@mail.ru')
+        Contact.objects.create(user=cls.user, telegram='@user')
 
     def test_contact_user_relation(self):
-        user = User.objects.get(id=1)
+        user = self.user
         contact = Contact.objects.get(id=1)
         self.assertEqual(contact.user, user)
 
-    def test_contact_type_field(self):
-        contact = Contact.objects.get(id=1)
-        self.assertEqual(contact.contact_type, 'Email')
-        self.assertIsInstance(contact.contact_type, str)
-        self.assertLessEqual(len(contact.contact_type), 50)
-
     def test_contact_link_field(self):
-        contact = Contact.objects.get(id=1)
-        self.assertEqual(contact.link, 'test@mail.ru')
-        self.assertIsInstance(contact.link, str)
-        self.assertLessEqual(len(contact.link), 255)
+        contact = self.user.contacts
+        self.assertEqual(contact.telegram, '@user')
+        self.assertIsInstance(contact.telegram, str)
+        self.assertLessEqual(len(contact.telegram), 255)

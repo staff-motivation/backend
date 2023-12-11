@@ -14,9 +14,28 @@ from users.models import Achievement, Contact, Hardskill, User
 
 
 class ContactSerializer(serializers.ModelSerializer):
+    def validate_phone(self, value):
+        if value[:1] == '+':
+            left, right = value[:2], value[2:]
+        else:
+            left, right = value[:1], value[1:]
+        if left not in ['+7', '8']:
+            raise serializers.ValidationError(
+                'Номер должен начинаться с +7 или 8'
+            )
+        if len(right) != 10:
+            raise serializers.ValidationError(
+                'Номер должен состоять из 11 цифр'
+            )
+        if not right.isdigit():
+            raise serializers.ValidationError(
+                'В номере должны быть только цифры'
+            )
+        return value
+
     class Meta:
         model = Contact
-        fields = ('contact_type', 'link')
+        fields = ('phone', 'telegram', 'github', 'linkedin')
 
 
 class AchievementSerializer(serializers.ModelSerializer):
@@ -53,7 +72,7 @@ class CustomUserRetrieveSerializer(UserSerializer):
         read_only=True, default=False
     )
     reward_points = serializers.IntegerField(read_only=True)
-    contacts = serializers.SerializerMethodField()
+    contacts = ContactSerializer(many=False)
     completed_tasks_count = serializers.IntegerField()
     reward_points_for_current_month = serializers.IntegerField()
     remaining_tasks_count = serializers.SerializerMethodField()
@@ -83,11 +102,6 @@ class CustomUserRetrieveSerializer(UserSerializer):
             'experience',
             'general_experience',
         )
-
-    def get_contacts(self, obj):
-        user = self.context['request'].user
-        queryset = Contact.objects.filter(user_id=user.id)
-        return ContactSerializer(queryset, many=True).data
 
     def get_total_tasks(self, instance):
         today = date.today()
@@ -139,15 +153,15 @@ class CustomUserRetrieveSerializer(UserSerializer):
                 )
                 instance.hardskills.add(hardskill)
 
-            for contact_data in contacts_data:
-                contact_type = contact_data.get('contact_type')
-                link = contact_data.get('link')
-                if contact_type and link:
-                    contact, created = Contact.objects.update_or_create(
-                        user=instance,
-                        contact_type=contact_type,
-                        defaults={'link': link},
-                    )
+            try:
+                contact = Contact.objects.get(user=instance)
+                for key, value in contacts_data.items():
+                    setattr(contact, key, value)
+                contact.save()
+            except Contact.DoesNotExist:
+                contacts_data['user'] = instance
+                Contact.objects.create(**contacts_data)
+
         instance = super().update(instance, validated_data)
         return instance
 

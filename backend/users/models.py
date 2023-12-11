@@ -50,18 +50,25 @@ class Contact(models.Model):
     Модель контактов.
     """
 
-    user = models.ForeignKey(
-        'User', on_delete=models.CASCADE, related_name='Contact'
+    user = models.OneToOneField(
+        'User', on_delete=models.CASCADE, related_name='contacts'
     )
-    contact_type = models.CharField(max_length=50)
-    link = models.CharField(max_length=255)
+    phone = models.CharField(
+        'Номер телефона', null=True, blank=True, max_length=20
+    )
+    telegram = models.CharField(
+        'Аккаунт telegram', null=True, blank=True, max_length=255
+    )
+    github = models.CharField(
+        'Аккаунт github', null=True, blank=True, max_length=255
+    )
+    linkedin = models.CharField(
+        'Аккаунт linkedin', null=True, blank=True, max_length=255
+    )
 
     class Meta:
         verbose_name = 'Контакт'
         verbose_name_plural = 'Контакты'
-
-    def __str__(self):
-        return f'{self.user.first_name} - {self.contact_type}: {self.link}'
 
 
 class CustomUserManager(BaseUserManager):
@@ -189,12 +196,6 @@ class User(AbstractUser):
     achievements = models.ManyToManyField(
         'Achievement', through='UserAchievement'
     )
-    contacts = models.ManyToManyField(
-        Contact,
-        through='UserContact',
-        blank=True,
-        related_name='user_contacts',
-    )
     completed_tasks_count = models.PositiveIntegerField(default=0)
     reward_points_for_current_month = models.IntegerField(default=0)
     objects = CustomUserManager()
@@ -228,20 +229,6 @@ class User(AbstractUser):
         Возвращает права тимлида.
         """
         return self.role == UserRole.TEAMLEADER
-
-
-class UserContact(models.Model):
-    """
-    Промежуточная модель для пользовательских контаков.
-    """
-
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='user_contacts'
-    )
-    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f'{self.user.first_name} - {self.contact.contact_type}'
 
 
 class UserHardskill(models.Model):

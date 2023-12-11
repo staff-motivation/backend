@@ -58,8 +58,10 @@ class ContactAdmin(ImportExportModelAdmin):
     в админ панели.
     """
 
-    list_display = ('user', 'contact_type', 'link')
-    resource_classes = [ContactResource]
+    class Meta:
+        model = Contact
+        skip_unchanged = True
+        report_skipped = True
 
 
 class HardskillInline(admin.TabularInline):
